@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     console.log("Running the model with prompt:", prompt);
     
     const output = await replicate.run(
-      "black-forest-labs/flux-schnell",
+      "priyanshur66/priyanshur:b29bf3d696774ab66911a2208595f081d565a2e90649cc1c4a99339a446901df",
       {
         input: {
           prompt: prompt,
