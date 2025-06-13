@@ -34,7 +34,7 @@ export default function TrainPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-[#A8FF60] via-white to-[#A8FF60] bg-clip-text text-transparent animate-gradient-move tracking-tight text-center drop-shadow-lg">
-            Train your model
+            now you can train your model!
           </h1>
         </div>
         <style jsx global>{`

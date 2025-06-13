@@ -136,7 +136,7 @@ export default function TestPage() {
       <nav className="fixed top-0 w-full bg-[#292A2D] border-b border-[#3E4044] z-50">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-lg font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
+            <Link href="/" className="text-3xl font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
               Medlo
             </Link>
             <div className="flex items-center space-x-6 text-sm font-medium">

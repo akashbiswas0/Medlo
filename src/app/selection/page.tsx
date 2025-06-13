@@ -4,29 +4,38 @@ import Link from "next/link";
 
 export default function SelectionPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#181A1B] animate-fade-in px-4">
-      <h1 className="text-7xl sm:text-5xl font-bold text-[#60A8FF] mb-12 mt-8 text-center tracking-wider font-mono drop-shadow-lg"
-      style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center animate-fade-in px-4 relative overflow-hidden" style={{ backgroundColor: '#181A1B' }}>
+      {/* Grid background */}
+      <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true"
+        style={{
+          backgroundImage:
+            `linear-gradient(to right, rgba(168,255,96,0.07) 1px, transparent 1px),` +
+            `linear-gradient(to bottom, rgba(168,255,96,0.07) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px',
+        }}
+      />
+      <h1 className="text-7xl sm:text-5xl font-bold text-[#A8FF60] mb-12 mt-8 text-center tracking-wider font-mono drop-shadow-lg"
+        style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
         which one is you?
       </h1>
-      <div className="flex flex-col sm:flex-row gap-10 w-full max-w-3xl justify-center">
+      <div className="flex flex-col sm:flex-row gap-10 w-full max-w-3xl justify-center z-10">
         {/* Brand Box */}
         <Link href="/brand-setup">
-        <div
-          className="w-full sm:w-[340px] h-32 bg-[#232426] rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-[#60A8FF] shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-2xl hover:ring-4 hover:ring-[#60A8FF]/30 cursor-pointer animate-fade-in-box font-mono border border-[#393B3C] tracking-widest"
-          style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
-        >
-          brand
-        </div>
+          <div
+            className="w-full sm:w-[340px] h-32 bg-[#232426] rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-[#A8FF60] shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-2xl hover:ring-4 hover:ring-[#A8FF60]/30 cursor-pointer animate-fade-in-box font-mono border border-[#393B3C] tracking-widest"
+            style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
+          >
+            brand
+          </div>
         </Link>
         {/* Influencer Box */}
         <Link href="/influencer-setup">
-        <div
-          className="w-full sm:w-[340px] h-32 bg-[#232426] rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-[#60A8FF] shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-2xl hover:ring-4 hover:ring-[#60A8FF]/30 cursor-pointer animate-fade-in-box delay-150 font-mono border border-[#393B3C] tracking-widest"
-          style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
-        >
-          influencer
-        </div>
+          <div
+            className="w-full sm:w-[340px] h-32 bg-[#232426] rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-[#A8FF60] shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-2xl hover:ring-4 hover:ring-[#A8FF60]/30 cursor-pointer animate-fade-in-box delay-150 font-mono border border-[#393B3C] tracking-widest"
+            style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
+          >
+            influencer
+          </div>
         </Link>
       </div>
       <style jsx global>{`
