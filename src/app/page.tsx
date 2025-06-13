@@ -1,7 +1,42 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+// Add Ethereum provider type for window.ethereum
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 export default function Home() {
+  const [isConnected, setIsConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const router = useRouter();
+
+  const handleConnectWallet = async () => {
+    if (typeof window === "undefined" || !window.ethereum) {
+      alert("MetaMask is not installed. Please install it to connect your wallet.");
+      return;
+    }
+    setConnecting(true);
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      if (accounts && accounts.length > 0) {
+        setIsConnected(true);
+        router.push("/selection");
+      } else {
+        setIsConnected(false);
+      }
+    } catch (err) {
+      setIsConnected(false);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Navbar */}
@@ -16,8 +51,12 @@ export default function Home() {
               <Link href="#features" className="hover:text-[#A8FF60] transition-colors">Features</Link>
               <Link href="#about" className="hover:text-[#A8FF60] transition-colors">About</Link>
               <Link href="#contact" className="hover:text-[#A8FF60] transition-colors">Contact</Link>
-              <button className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-[#A8FF60] hover:text-black transition-all duration-300">
-                Connect Wallet
+              <button
+                className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-[#A8FF60] hover:text-black transition-all duration-300"
+                onClick={handleConnectWallet}
+                disabled={isConnected || connecting}
+              >
+                {isConnected ? "Connected" : connecting ? "Connecting..." : "connect wallet"}
               </button>
             </div>
           </div>
