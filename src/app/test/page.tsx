@@ -15,7 +15,16 @@ const ASPECT_RATIO_OPTIONS = [
   { id: '3:2', name: '3:2 (Landscape)' },
   { id: '2:3', name: '2:3 (Portrait)' },
   { id: '16:9', name: '16:9 (Widescreen)' },
+  { id: 'custom', name: 'Custom' },
 ];
+
+const ASPECT_RATIO_PRESETS: Record<string, { width: number; height: number }> = {
+  '1:1': { width: 1024, height: 1024 },
+  '3:2': { width: 1152, height: 768 },
+  '2:3': { width: 768, height: 1152 },
+  '16:9': { width: 1280, height: 720 },
+  // 'custom' is not included here
+};
 
 export default function TestPage() {
   const [prompt, setPrompt] = useState('');
@@ -27,6 +36,7 @@ export default function TestPage() {
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [selectedAspectRatio, setSelectedAspectRatio] = useState(ASPECT_RATIO_OPTIONS[0].id);
   const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
+  const [width, setWidth] = useState(768);
   const [height, setHeight] = useState(768);
 
   const enhancePrompt = async () => {
@@ -85,7 +95,12 @@ export default function TestPage() {
           prompt: prompt,
           model: selectedModel,
           aspectRatio: selectedAspectRatio,
-          height: height
+          height: selectedAspectRatio === 'custom'
+            ? height
+            : ASPECT_RATIO_PRESETS[selectedAspectRatio]?.height,
+          width: selectedAspectRatio === 'custom'
+            ? width
+            : ASPECT_RATIO_PRESETS[selectedAspectRatio]?.width,
         }),
       });
 
@@ -112,6 +127,7 @@ export default function TestPage() {
     setSelectedModel(MODEL_OPTIONS[0].id);
     setSelectedAspectRatio(ASPECT_RATIO_OPTIONS[0].id);
     setHeight(768);
+    setWidth(768);
   };
 
   return (
@@ -207,6 +223,10 @@ export default function TestPage() {
                       onClick={() => {
                         setSelectedAspectRatio(ar.id);
                         setIsAspectRatioDropdownOpen(false);
+                        if (ar.id !== 'custom' && ASPECT_RATIO_PRESETS[ar.id]) {
+                          setWidth(ASPECT_RATIO_PRESETS[ar.id].width);
+                          setHeight(ASPECT_RATIO_PRESETS[ar.id].height);
+                        }
                       }}
                       className="w-full px-3 py-2 text-left text-gray-100 hover:bg-[#3A3A3A] transition-colors border-b border-[#3E4044] last:border-b-0"
                     >
@@ -216,23 +236,69 @@ export default function TestPage() {
                 </div>
               )}
             </div>
+            <p className="text-xs text-gray-500 mt-2">Aspect ratio for the generated image. The size will always be 1 megapixel, i.e. 1024x1024 if aspect ratio is 1:1. To use arbitrary width and height, set aspect ratio to 'custom'. Default: &quot;1:1&quot;</p>
           </div>
 
-          {/* Height Input (placeholder for slider) */}
+          {/* Width Input with Slider */}
+          <div className="mb-6">
+            <label htmlFor="width" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              # width integer (minimum: 256, maximum: 1440)
+            </label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="number"
+                id="width"
+                min={256}
+                max={1440}
+                value={width}
+                onChange={(e) => setWidth(parseInt(e.target.value))}
+                className="w-24 px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
+                disabled={loading || enhancing || selectedAspectRatio !== 'custom'}
+              />
+              <input
+                type="range"
+                min={256}
+                max={1440}
+                step={16} // Multiple of 16
+                value={width}
+                onChange={(e) => setWidth(parseInt(e.target.value))}
+                className="flex-grow h-2 bg-[#3E4044] rounded-lg appearance-none cursor-pointer range-thumb-custom"
+                style={{'--webkit-slider-thumb-bg': '#A8FF60', '--moz-range-thumb-bg': '#A8FF60'} as React.CSSProperties}
+                disabled={loading || enhancing || selectedAspectRatio !== 'custom'}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Width of the generated image. Optional, only used when aspect_ratio=custom. Must be a multiple of 16 (if it's not, it will be rounded to nearest multiple of 16)</p>
+          </div>
+
+          {/* Height Input with Slider */}
           <div className="mb-6">
             <label htmlFor="height" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
               # height integer (minimum: 256, maximum: 1440)
             </label>
-            <input
-              type="number"
-              id="height"
-              min={256}
-              max={1440}
-              value={height}
-              onChange={(e) => setHeight(parseInt(e.target.value))}
-              className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
-              disabled={loading || enhancing}
-            />
+            <div className="flex items-center space-x-3">
+              <input
+                type="number"
+                id="height"
+                min={256}
+                max={1440}
+                value={height}
+                onChange={(e) => setHeight(parseInt(e.target.value))}
+                className="w-24 px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
+                disabled={loading || enhancing || selectedAspectRatio !== 'custom'}
+              />
+              <input
+                type="range"
+                min={256}
+                max={1440}
+                step={16} // Multiple of 16
+                value={height}
+                onChange={(e) => setHeight(parseInt(e.target.value))}
+                className="flex-grow h-2 bg-[#3E4044] rounded-lg appearance-none cursor-pointer range-thumb-custom"
+                style={{'--webkit-slider-thumb-bg': '#A8FF60', '--moz-range-thumb-bg': '#A8FF60'} as React.CSSProperties}
+                disabled={loading || enhancing || selectedAspectRatio !== 'custom'}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Height of the generated image. Optional, only used when aspect_ratio=custom. Must be a multiple of 16 (if it's not, it will be rounded to nearest multiple of 16)</p>
           </div>
 
           {/* Model Selection Dropdown (moved here to match flow) */}

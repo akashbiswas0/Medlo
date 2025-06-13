@@ -9,7 +9,22 @@ const replicate = new Replicate();
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt } = await request.json();
+    const {
+      prompt,
+      aspectRatio,
+      extra_lora_scale = 1,
+      go_fast = false,
+      guidance_scale = 3,
+      lora_scale = 1,
+      megapixels = "1",
+      model: modelName = "dev",
+      num_inference_steps = 28,
+      num_outputs = 1,
+      output_format = "webp",
+      output_quality = 80,
+      prompt_strength = 0.8,
+      logs = ""
+    } = await request.json();
 
     if (!prompt) {
       return NextResponse.json(
@@ -20,11 +35,27 @@ export async function POST(request: NextRequest) {
 
     console.log("Running the model with prompt:", prompt);
     
+    const allowedModels = ["dev", "schnell"];
+    const safeModel = allowedModels.includes(modelName) ? modelName : "dev";
+
     const output = await replicate.run(
       "priyanshur66/priyanshur:b29bf3d696774ab66911a2208595f081d565a2e90649cc1c4a99339a446901df",
       {
         input: {
-          prompt: prompt,
+          prompt,
+          aspect_ratio: aspectRatio || "1:1",
+          extra_lora_scale,
+          go_fast,
+          guidance_scale,
+          lora_scale,
+          megapixels,
+          model: safeModel,
+          num_inference_steps,
+          num_outputs,
+          output_format,
+          output_quality,
+          prompt_strength,
+          logs
         },
       }
     );
