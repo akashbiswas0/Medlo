@@ -4,25 +4,34 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 const MODEL_OPTIONS = [
-  { id: 'stable-diffusion', name: 'choose options', description: 'Best for general image generation' },
+  { id: 'stable-diffusion', name: 'Stable Diffusion', description: 'Best for general image generation' },
   { id: 'midjourney', name: 'Midjourney Style', description: 'Artistic and creative outputs' },
   { id: 'dall-e', name: 'DALL-E', description: 'Photorealistic and detailed images' },
   { id: 'custom', name: 'Custom Model', description: 'Use your own fine-tuned model' },
 ];
 
+const ASPECT_RATIO_OPTIONS = [
+  { id: '1:1', name: '1:1 (Square)' },
+  { id: '3:2', name: '3:2 (Landscape)' },
+  { id: '2:3', name: '2:3 (Portrait)' },
+  { id: '16:9', name: '16:9 (Widescreen)' },
+];
+
 export default function TestPage() {
   const [prompt, setPrompt] = useState('');
-  const [enhancedPrompt, setEnhancedPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [error, setError] = useState('');
   const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[0].id);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState(ASPECT_RATIO_OPTIONS[0].id);
+  const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
+  const [height, setHeight] = useState(768);
 
   const enhancePrompt = async () => {
     if (!prompt.trim()) {
-      setError('Please enter a prompt to enhance');
+      setError('Prompt cannot be empty.');
       return;
     }
 
@@ -39,13 +48,16 @@ export default function TestPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to enhance prompt');
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to enhance prompt');
       }
 
       const data = await response.json();
-      setEnhancedPrompt(data.enhancedPrompt);
+      if (data.enhancedPrompt) {
+        setPrompt(data.enhancedPrompt);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during prompt enhancement.');
     } finally {
       setEnhancing(false);
     }
@@ -55,7 +67,7 @@ export default function TestPage() {
     e.preventDefault();
     
     if (!prompt.trim()) {
-      setError('Please enter a prompt');
+      setError('Please enter a prompt before generating an image.');
       return;
     }
 
@@ -69,167 +81,296 @@ export default function TestPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: enhancedPrompt || prompt, model: selectedModel }),
+        body: JSON.stringify({
+          prompt: prompt,
+          model: selectedModel,
+          aspectRatio: selectedAspectRatio,
+          height: height
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate image');
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to generate image');
       }
 
       const data = await response.json();
       setImageUrl(data.imageUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during image generation.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleReset = () => {
+    setPrompt('');
+    setImageUrl('');
+    setError('');
+    setLoading(false);
+    setEnhancing(false);
+    setSelectedModel(MODEL_OPTIONS[0].id);
+    setSelectedAspectRatio(ASPECT_RATIO_OPTIONS[0].id);
+    setHeight(768);
+  };
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-[#1F2023] text-gray-200 font-sans">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 border-b-2 border-black dark:border-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="fixed top-0 w-full bg-[#292A2D] border-b border-[#3E4044] z-50">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold hover:text-[#A8FF60] transition-colors">
+            <Link href="/" className="text-lg font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
               Medlo
             </Link>
+            <div className="flex items-center space-x-6 text-sm font-medium">
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Dashboard</a>
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Explore</a>
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Pricing</a>
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Docs</a>
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Blog</a>
+              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Changelog</a>
+            </div>
           </div>
         </div>
       </nav>
 
-      <main className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-              Run Inference
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Transform your ideas into stunning visuals with our AI-powered image generator
-            </p>
+      <main className="flex min-h-screen pt-16">
+        {/* Left Side - Input Panel */}
+        <div className="w-full lg:w-2/5 border-r border-[#3E4044] p-6 overflow-y-auto custom-scrollbar">
+          <div className="mb-6">
+            
           </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Side - Prompt Input */}
-            <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              {/* Model Selection Dropdown */}
-              <div className="relative mb-6">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full px-4 py-3 border-2 border-black dark:border-white rounded-lg bg-white dark:bg-black text-left flex justify-between items-center hover:bg-[#A8FF60]/10 transition-all"
-                >
-                  <span className="font-bold">
-                    {MODEL_OPTIONS.find(m => m.id === selectedModel)?.name}
-                  </span>
-                  <svg
-                    className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {isDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-2 bg-white dark:bg-black border-2 border-black dark:border-white rounded-lg shadow-lg">
-                    {MODEL_OPTIONS.map((model) => (
-                      <button
-                        key={model.id}
-                        onClick={() => {
-                          setSelectedModel(model.id);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left hover:bg-[#A8FF60]/10 transition-all border-b-2 border-black dark:border-white last:border-b-0"
-                      >
-                        <div className="font-bold">{model.name}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">{model.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+          {/* Prompt Input */}
+          <div className="mb-6">
+            <label htmlFor="prompt" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+             user prompt
+            </label>
+            <textarea
+              id="prompt"
+              rows={8}
+              className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent resize-y"
+              placeholder="Enter a detailed prompt for image generation..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              disabled={loading || enhancing}
+            />
+          </div>
 
-              <form onSubmit={generateImage} className="space-y-6">
-                <div>
-                  <label htmlFor="prompt" className="block text-lg font-bold mb-2">
-                    Enter your prompt
-                  </label>
-                  <textarea
-                    id="prompt"
-                    rows={4}
-                    className="w-full px-4 py-3 border-2 border-black dark:border-white rounded-lg bg-white dark:bg-black focus:outline-none focus:ring-2 focus:ring-[#A8FF60] focus:border-transparent transition-all"
-                    placeholder="An astronaut riding a rainbow unicorn, cinematic, dramatic"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    disabled={loading || enhancing}
-                  />
-                </div>
-                
-                <div className="flex flex-col gap-4">
-                  <button
-                    type="button"
-                    onClick={enhancePrompt}
-                    disabled={loading || enhancing || !prompt.trim()}
-                    className="w-full px-6 py-3 border-2 border-black dark:border-white rounded-lg bg-white dark:bg-black text-black dark:text-white hover:bg-[#A8FF60] hover:text-black transition-all duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {enhancing ? 'Enhancing...' : '✨ Enhance Prompt'}
-                  </button>
-                  
-                  <button
-                    type="submit"
-                    disabled={loading || enhancing}
-                    className="w-full px-6 py-3 border-2 border-black dark:border-white rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-[#A8FF60] hover:text-black transition-all duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? 'Generating...' : 'Generate Image'}
-                  </button>
-                </div>
-              </form>
+          {/* Image File Input (placeholder) */}
+          <div className="mb-6">
+            <label htmlFor="image-file" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              D image file
+            </label>
+            <input
+              type="text"
+              id="image-file"
+              className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
+              placeholder="Enter a URL, paste a file, or drag a file over."
+              disabled={true} // Placeholder for now
+            />
+          </div>
 
-              {error && (
-                <div className="mt-6 p-4 border-2 border-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                  <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
-                </div>
-              )}
+          {/* Mask File Input (placeholder) */}
+          <div className="mb-6">
+            <label htmlFor="mask-file" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              D mask file
+            </label>
+            <input
+              type="text"
+              id="mask-file"
+              className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
+              placeholder="Enter a URL, paste a file, or drag a file over."
+              disabled={true} // Placeholder for now
+            />
+          </div>
 
-              {enhancedPrompt && (
-                <div className="mt-6 p-4 border-2 border-black dark:border-white rounded-lg bg-gray-50 dark:bg-gray-900">
-                  <p className="font-medium">Enhanced Prompt:</p>
-                  <p className="mt-2 text-gray-600 dark:text-gray-300">"{enhancedPrompt}"</p>
-                </div>
-              )}
-            </div>
-
-            {/* Right Side - Generated Images */}
-            <div className="bg-white dark:bg-black border-2 border-black dark:border-white rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              {loading ? (
-                <div className="h-full flex flex-col items-center justify-center">
-                  <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#A8FF60] border-t-transparent"></div>
-                  <p className="mt-4 text-lg font-medium">Generating your masterpiece...</p>
-                </div>
-              ) : imageUrl ? (
-                <div>
-                  <div className="border-2 border-black dark:border-white rounded-lg overflow-hidden">
-                    <img
-                      src={imageUrl}
-                      alt="Generated image"
-                      className="w-full h-auto"
-                      onError={(e) => {
-                        console.error('Image failed to load:', e);
-                        setError('Failed to load the generated image. The image URL might be invalid.');
+          {/* Aspect Ratio Dropdown */}
+          <div className="mb-6">
+            <label htmlFor="aspect-ratio" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              Aspect Ratio string
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsAspectRatioDropdownOpen(!isAspectRatioDropdownOpen)}
+                className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-left flex justify-between items-center text-gray-100 hover:border-[#A8FF60] transition-colors"
+              >
+                {ASPECT_RATIO_OPTIONS.find(ar => ar.id === selectedAspectRatio)?.name}
+                <svg className={`w-4 h-4 transition-transform ${isAspectRatioDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {isAspectRatioDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-[#2E3034] border border-[#3E4044] rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {ASPECT_RATIO_OPTIONS.map((ar) => (
+                    <button
+                      key={ar.id}
+                      onClick={() => {
+                        setSelectedAspectRatio(ar.id);
+                        setIsAspectRatioDropdownOpen(false);
                       }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  <p className="text-lg">Your generated image will appear here</p>
+                      className="w-full px-3 py-2 text-left text-gray-100 hover:bg-[#3A3A3A] transition-colors border-b border-[#3E4044] last:border-b-0"
+                    >
+                      {ar.name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           </div>
+
+          {/* Height Input (placeholder for slider) */}
+          <div className="mb-6">
+            <label htmlFor="height" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              # height integer (minimum: 256, maximum: 1440)
+            </label>
+            <input
+              type="number"
+              id="height"
+              min={256}
+              max={1440}
+              value={height}
+              onChange={(e) => setHeight(parseInt(e.target.value))}
+              className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
+              disabled={loading || enhancing}
+            />
+          </div>
+
+          {/* Model Selection Dropdown (moved here to match flow) */}
+          <div className="mb-6">
+            <label htmlFor="model" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+              Model
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-left flex justify-between items-center text-gray-100 hover:border-[#A8FF60] transition-colors"
+              >
+                {MODEL_OPTIONS.find(m => m.id === selectedModel)?.name}
+                <svg className={`w-4 h-4 transition-transform ${isModelDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {isModelDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-[#2E3034] border border-[#3E4044] rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {MODEL_OPTIONS.map((model) => (
+                    <button
+                      key={model.id}
+                      onClick={() => {
+                        setSelectedModel(model.id);
+                        setIsModelDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-gray-100 hover:bg-[#3A3A3A] transition-colors border-b border-[#3E4044] last:border-b-0"
+                    >
+                      <div className="font-medium">{model.name}</div>
+                      <div className="text-xs text-gray-400">{model.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 mb-6">Prompt for generated image. If you include the &apos;trigger_word&apos; used in the training process you are more likely to activate the trained object, style, or concept in the resulting image.</p>
+
+          {error && (
+            <div className="p-3 bg-red-900/20 border border-red-700 text-red-400 rounded-md mb-4 flex items-center gap-2 text-sm">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {error}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="mt-auto pt-6 border-t border-[#3E4044] flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-4 py-2 bg-transparent text-gray-400 rounded-md hover:text-[#A8FF60] transition-colors text-sm font-medium"
+            >
+              Reset
+            </button>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={enhancePrompt}
+                disabled={loading || enhancing || !prompt.trim()}
+                className="px-4 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 hover:bg-[#3A3A3A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              >
+                {enhancing ? 'Enhancing...' : '✨ Enhance'}
+              </button>
+              <button
+                type="submit"
+                onClick={generateImage}
+                disabled={loading || enhancing || !prompt.trim()}
+                className="px-4 py-2 bg-[#A8FF60] text-black rounded-md hover:bg-[#97E651] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base flex items-center gap-2"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-black" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Running...
+                  </span>
+                ) : (
+                  <>
+                    Run
+                   
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Output Panel */}
+        <div className="flex-grow p-6 flex flex-col items-center justify-center bg-[#1A1A1A]">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center text-gray-400">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-20 h-20 border-4 border-[#A8FF60] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <div className="w-20 h-20 border-4 border-[#444444] border-r-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse' }}></div>
+              </div>
+              <p className="text-lg font-medium">Generating your masterpiece...</p>
+              <p className="mt-2 text-sm text-gray-500">This may take a few moments</p>
+            </div>
+          ) : imageUrl ? (
+            <div className="flex flex-col items-center">
+              <div className="relative w-full h-auto mb-6 flex justify-center items-center overflow-hidden max-h-[80vh]">
+                <img
+                  src={imageUrl}
+                  alt="Generated image"
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg border border-[#3E4044] shadow-lg"
+                  onLoad={() => console.log('Image loaded.')}
+                  onError={(e) => {
+                    console.error('Image failed to load:', e);
+                    setError('Failed to load image. URL might be invalid.');
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Tweak it</button>
+                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
+                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
+                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Report</button>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Add to examples</button>
+                <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020]">Delete</button>
+              </div>
+             
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-gray-500">
+              <svg className="w-24 h-24 mb-4 text-[#3E4044]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-base font-medium text-gray-400">Your generated image will appear here</p>
+              <p className="mt-1 text-sm text-gray-500">Enter a prompt and click &quot;Run&quot; to create your image</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
   );
-} 
+}

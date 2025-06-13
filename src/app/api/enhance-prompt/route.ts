@@ -1,9 +1,9 @@
 import Replicate from "replicate";
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 const replicate = new Replicate();
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const { prompt } = await request.json();
 
@@ -25,7 +25,7 @@ Enhanced prompt:`;
       {
         input: {
           prompt: enhancementPrompt,
-          max_tokens: 150,
+          max_tokens: 500,
           temperature: 0.7
         }
       }
