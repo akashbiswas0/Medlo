@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Influencer {
   id: string;
@@ -29,6 +30,17 @@ export default function AvailableInfluencersPage() {
   const [combinedData, setCombinedData] = useState<CombinedData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedTriggerId, setCopiedTriggerId] = useState<string | null>(null);
+
+  const handleCopy = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTriggerId(id);
+      setTimeout(() => setCopiedTriggerId(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,7 +125,7 @@ export default function AvailableInfluencersPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 ml-10justify-items-center">
           {combinedData.length > 0 ? (
             combinedData.map((data) => (
-              <div key={data.id} className="relative bg-[#232426] border-2 border-[#A8FF60] rounded-none shadow-xl p-6 transform transition-transform duration-300 hover:scale-105 flex flex-col justify-between aspect-video">
+              <div key={data.id} className="relative bg-[#232426] border-2 border-[#A8FF60] rounded-none shadow-xl p-6 transform transition-transform duration-300 flex flex-col justify-between aspect-video">
                 {/* Top-left corner */}
                 <div className="absolute top-0 left-0 w-4 h-4 bg-[#A8FF60]"></div>
                 {/* Top-right corner */}
@@ -124,17 +136,27 @@ export default function AvailableInfluencersPage() {
                 <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#A8FF60]"></div>
 
                 <div className="flex flex-col gap-2 z-10">
-                  <h3 className="text-xl font-bold text-[#A8FF60] mb-2 font-pixel tracking-tighter" style={{ textShadow: '0 0 12px rgba(168,255,96,0.8)' }}>
-                    {data.trigger}
-                  </h3>
+                  <div className="flex items-center justify-between w-full">
+                    <h3 className="text-xl font-bold text-[#A8FF60] font-pixel tracking-tighter" style={{ textShadow: '0 0 12px rgba(168,255,96,0.8)' }}>
+                      {data.trigger}
+                    </h3>
+                    <button
+                      onClick={() => handleCopy(data.trigger, data.id)}
+                      className="ml-4 px-3 py-1 rounded-md bg-[#393B3C] text-[#A8FF60] text-xs font-pixel hover:bg-[#393B3C]/50 transition-colors duration-200 cursor-pointer"
+                    >
+                      {copiedTriggerId === data.id ? 'Copied!' : 'Copy Trigger'}
+                    </button>
+                  </div>
                   <p className="text-gray-300 font-pixel text-sm">Model ID: {data.model_id}</p>
                   <p className="text-gray-300 font-pixel text-sm">X Username: {data.x_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Insta Username: {data.insta_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Followers: {data.follower_count.toLocaleString()}</p>
                 </div>
-                <button className="mt-6 self-end py-2 px-6 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-pixel text-base hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer">
-                  Generate
+                <Link href={`/generate-campaigns`}>
+                <button className="mt-6 self-end py-2 px-6 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-pixel text-base hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer hover:scale-105">
+                  Generate Campaigns
                 </button>
+                </Link>
               </div>
             ))
           ) : (

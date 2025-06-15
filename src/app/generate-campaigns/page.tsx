@@ -358,7 +358,7 @@ export default function TestPage() {
                 type="button"
                 onClick={enhancePrompt}
                 disabled={loading || enhancing || !prompt.trim()}
-                className="px-4 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 hover:bg-[#3A3A3A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                className="px-4 py-2 cursor-pointer bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 hover:bg-[#3A3A3A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
               >
                 {enhancing ? 'Enhancing...' : '✨ Enhance'}
               </button>
@@ -402,7 +402,7 @@ export default function TestPage() {
             </div>
           ) : imageUrl ? (
             <div className="flex flex-col items-center">
-              <div className="relative w-full h-auto mb-6 flex justify-center items-center overflow-hidden max-h-[80vh]">
+              <div className="relative w-full h-auto mb-6 -mt-60 flex justify-center items-center overflow-hidden max-h-[80vh]">
                 <img
                   src={imageUrl}
                   alt="Generated image"
@@ -418,11 +418,11 @@ export default function TestPage() {
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Tweak it</button>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
-                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Report</button>
+                {/* <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Report</button> */}
               </div>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
-                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Add to examples</button>
-                <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020]">Delete</button>
+                {/* <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Add to examples</button> */}
+                <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020] cursor-pointer">Delete</button>
               </div>
              
             </div>
