@@ -4,14 +4,42 @@ import { useRouter } from "next/navigation";
 
 export default function BrandSetupPage() {
   const [brandName, setBrandName] = useState("");
-  const [email, setEmail] = useState("");
-  const [website, setWebsite] = useState("");
-  const [description, setDescription] = useState("");
+  const [brandNiche, setBrandNiche] = useState("");
+  const [xUsername, setXUsername] = useState("");
+  const [brandEmail, setBrandEmail] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/available-influencer");
+    setError("");
+
+    try {
+      const response = await fetch('http://localhost:3001/api/brand/post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          brand_name: brandName,
+          brand_niche: brandNiche,
+          brand_x_username: xUsername,
+          brand_email: brandEmail
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+        throw new Error(data.error || data.details || 'Failed to save brand data');
+      }
+
+      const data = await response.json();
+      console.log('Success response:', data);
+      router.push("/available-influencer");
+    } catch (err) {
+      console.error('Form submission error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while saving data');
+    }
   };
 
   return (
@@ -46,30 +74,35 @@ export default function BrandSetupPage() {
               Brand Name
             </label>
           </div>
-          {/* Email */}
+          {/* Brand Niche */}
           <div className="relative">
-            <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Email" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
-            <label htmlFor="email" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Email
+            <input type="text" id="brandNiche" value={brandNiche} onChange={e => setBrandNiche(e.target.value)} required
+              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Niche" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
+            <label htmlFor="brandNiche" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
+              Brand Niche
             </label>
           </div>
-          {/* Website */}
+          {/* X Username */}
           <div className="relative">
-            <input type="url" id="website" value={website} onChange={e => setWebsite(e.target.value)} required
-              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Website" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
-            <label htmlFor="website" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Website
+            <input type="text" id="xUsername" value={xUsername} onChange={e => setXUsername(e.target.value)} required
+              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="X Username" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
+            <label htmlFor="xUsername" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
+              X Username
             </label>
           </div>
-          {/* Description */}
+          {/* Brand Email */}
           <div className="relative">
-            <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} required
-              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent min-h-[80px] resize-y" placeholder="Description" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
-            <label htmlFor="description" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Description
+            <input type="email" id="brandEmail" value={brandEmail} onChange={e => setBrandEmail(e.target.value)} required
+              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Email" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
+            <label htmlFor="brandEmail" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
+              Brand Email
             </label>
           </div>
+          {error && (
+            <div className="text-red-500 text-sm font-mono" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
+              {error}
+            </div>
+          )}
           <button type="submit" className="mt-2 w-full py-3 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-mono text-lg hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md tracking-wider" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
             Submit
           </button>

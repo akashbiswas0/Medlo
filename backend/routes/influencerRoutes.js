@@ -1,27 +1,81 @@
 // routes/influencerRoutes.js
-const express = require('express')
-const supabase = require('../db/supabase')
+import express from 'express';
+import { supabase } from '../db/supabase.js';
 
-const router = express.Router()
+const router = express.Router();
 
-// POST route
+// POST route to create a new influencer
 router.post('/post', async (req, res) => {
-  const { username, x_username, insta_username, follower_count } = req.body
+  try {
+    const { username, x_username, insta_username, follower_count } = req.body;
 
-  const { data, error } = await supabase.from('influencer').insert([
-    { username, x_username, insta_username, follower_count },
-  ])
+    // Validate required fields
+    if (!username || !x_username || !insta_username || !follower_count) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        details: 'Please provide username, x_username, insta_username, and follower_count'
+      });
+    }
 
-  if (error) return res.status(400).json({ error: error.message })
-  res.status(200).json({ message: 'Influencer added successfully', data })
-})
+    // Insert data into Supabase
+    const { data, error } = await supabase
+      .from('influencer')
+      .insert([
+        {
+          username,
+          x_username,
+          insta_username,
+          follower_count
+        }
+      ])
+      .select();
 
-// GET route
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({
+        error: 'Database error',
+        details: error.message
+      });
+    }
+
+    return res.status(201).json({
+      message: 'Influencer created successfully',
+      data
+    });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({
+      error: 'Server error',
+      details: error.message
+    });
+  }
+});
+
+// GET route to fetch all influencers
 router.get('/get', async (req, res) => {
-  const { data, error } = await supabase.from('influencer').select('*')
+  try {
+    const { data, error } = await supabase
+      .from('influencer')
+      .select('*');
 
-  if (error) return res.status(400).json({ error: error.message })
-  res.status(200).json({ influencers: data })
-})
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({
+        error: 'Database error',
+        details: error.message
+      });
+    }
 
-module.exports = router
+    return res.status(200).json(data);
+
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({
+      error: 'Server error',
+      details: error.message
+    });
+  }
+});
+
+export default router;
