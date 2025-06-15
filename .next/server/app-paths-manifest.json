@@ -1,10 +1,7 @@
 {
-  "/api/train-flux/route": "app/api/train-flux/route.js",
-  "/api/model/route": "app/api/model/route.js",
-  "/api/train-flux/status/route": "app/api/train-flux/status/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js",
   "/influencer-setup/page": "app/influencer-setup/page.js",
-  "/train/page": "app/train/page.js"
+  "/page": "app/page.js",
+  "/train/page": "app/train/page.js",
+  "/selection/page": "app/selection/page.js",
+  "/available-influencer/page": "app/available-influencer/page.js"
 }
