@@ -1,14 +1,15 @@
 import Replicate from "replicate";
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import JSZip from 'jszip';
 
 const replicate = new Replicate();
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const triggerWord = formData.get('triggerWord');
-    const steps = parseInt(formData.get('steps'));
+    const stepsValue = formData.get('steps');
+    const steps = stepsValue ? parseInt(stepsValue.toString()) : 1000;
 
     if (!triggerWord) {
       return NextResponse.json(
@@ -131,8 +132,9 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Error starting training:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: `Failed to start training: ${error.message}` },
+      { error: `Failed to start training: ${errorMessage}` },
       { status: 500 }
     );
   }

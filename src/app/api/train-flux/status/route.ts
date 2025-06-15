@@ -1,9 +1,9 @@
 import Replicate from "replicate";
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 const replicate = new Replicate();
 
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const trainingId = searchParams.get('id');
@@ -29,8 +29,9 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('Error fetching training status:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: `Failed to fetch training status: ${error.message}` },
+      { error: `Failed to fetch training status: ${errorMessage}` },
       { status: 500 }
     );
   }

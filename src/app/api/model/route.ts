@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { getSupabaseClient } from '../../../lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('model_details')
       .insert([{ trigger, model_id }])
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     console.log('Fetching all model details...');
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('model_details')
       .select('*');
