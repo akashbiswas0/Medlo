@@ -12,21 +12,17 @@
     "@supabase/supabase-js": "^2.50.0",
     "core-js-pure": "^3.43.0",
     "jszip": "^3.10.1",
-    "next": "^15.3.3",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "replicate": "^1.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "resolutions": {
-    "react": "^18.0.0",
-    "@types/react": "^18.0.0"
   }
 }

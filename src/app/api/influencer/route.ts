@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { getSupabaseClient } from '../../../lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Insert data into Supabase
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('influencer')
       .insert([
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     console.log('Fetching all influencers...');
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('influencer')
       .select('*');
