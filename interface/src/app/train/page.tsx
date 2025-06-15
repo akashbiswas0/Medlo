@@ -128,6 +128,27 @@ export default function TrainPage() {
       const data = await response.json();
       setTrainingId(data.trainingId);
       setTrainingStatus(data.status);
+
+      // Save model details to database
+      try {
+        const modelResponse = await fetch('http://localhost:3001/api/model/post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            trigger: triggerWord,
+            model_id: data.trainingId
+          }),
+        });
+
+        if (!modelResponse.ok) {
+          console.error('Failed to save model details:', await modelResponse.text());
+        }
+      } catch (modelError) {
+        console.error('Error saving model details:', modelError);
+      }
+
       pollTrainingStatus(data.trainingId);
     } catch (err: any) {
       setError(err.message);
@@ -311,9 +332,6 @@ export default function TrainPage() {
               <div className="mt-4 p-4 bg-green-950 border border-green-800 rounded">
                 <p className="text-green-400">
                   🎉 Training completed successfully! Your model is ready to use.
-                </p>
-                <p className="text-sm text-green-300 mt-1">
-                  Model: akb
                 </p>
               </div>
             )}
