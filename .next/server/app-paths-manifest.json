@@ -1,7 +1,0 @@
-{
-  "/train/page": "app/train/page.js",
-  "/influencer-setup/page": "app/influencer-setup/page.js",
-  "/available-influencer/page": "app/available-influencer/page.js",
-  "/generate-campaigns/page": "app/generate-campaigns/page.js",
-  "/selection/page": "app/selection/page.js"
-}
