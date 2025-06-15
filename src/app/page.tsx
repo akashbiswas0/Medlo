@@ -73,7 +73,7 @@ export default function Home() {
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
               Empowering creators with decentralized AI tools and intellectual property solutions
             </p>
-            <Link href="/test">
+            <Link href="/generate-campaigns">
             <button className="px-8 py-4 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-[#A8FF60] hover:text-black transition-all duration-300 text-lg font-semibold animate-pulse">
               Get Started
             </button>
