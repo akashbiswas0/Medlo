@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Medlo
 
-## Getting Started
+AI-IP tooling built on **Story Protocol** 
 
-First, run the development server:
+Creators & influencers collaboratively generate AI art, register it as on-chain intellectual property, set royalty splits, and let their communities mint licences that unlock gated utility (events, chats, future drops, etc.).
+
+---
+
+## ✨ Key Features
+
+| Module | Description |
+| ------ | ----------- |
+| AI Generation |  (opensource models finetuned in influencer's images) produces image variations for nft projects. |
+| IP Registration | Final image & metadata are pinned to IPFS and registered as an **IP Asset** on Story Network. |
+| Royalty Splits | Creator, influencer, platform & base-model shares encoded on-chain at registration. |
+| Licence Minting | Followers mint licence NFTs (1 $WIP default fee) and revenue flows automatically. |
+| Royalty Dashboard | Claim accumulated revenue in $WIP with one click. |
+| Disputes | Raise Story Protocol disputes with evidence files, bonded & time-boxed. |
+| Tomo Wallet | Account-abstraction & social login via Tomo SDL for seamless onboarding. |
+
+---
+
+## 🛠️ Tech Stack
+
+* Next.js 14 (App Router, React 18)
+* Tailwind CSS v4
+* **@story-protocol/core-sdk** – IP, licensing, royalties, disputes
+* **@tomo-inc/tomo-evm-kit** – wallet provider & connect modal
+* wagmi v2 + viem – typed EVM interactions
+* Replicate SDK – model inference
+* Pinata – IPFS uploads
+* TypeScript everywhere
+
+---
+
+## ▶️ Getting Started
 
 ```bash
+# 1 Install dependencies
+npm install
+
+# 2 Populate environment variables
+cp .env.example .env.local
+#   PINATA_JWT, NEXT_PUBLIC_PLATFORM_ADDRESS, etc.
+
+# 3 Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Name | Purpose |
+| ---- | ------- |
+| `PINATA_JWT` | Auth token for Pinata upload API |
+| `NEXT_PUBLIC_PLATFORM_ADDRESS` | Platform royalty receiver |
+| `NEXT_PUBLIC_BASE_MODEL_ADDRESS` | Base model royalty receiver |
+| `TOMO_CLIENT_ID` | App client ID from Tomo dashboard |
+| `WALLETCONNECT_PROJECT_ID` | WalletConnect 2 project id used by Tomo EVM kit |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🏗️ Story Protocol Flow
 
-To learn more about Next.js, take a look at the following resources:
+1. **Collection** – create a fresh SPG NFT collection (`client.nftClient.createNFTCollection`).
+2. **Mint + Register** – `client.ipAsset.mintAndRegisterIp` registers metadata CIDs & mints ownership in one tx.
+3. **Licence Terms** – `client.license.registerPILTerms` sets default fee (1 $WIP) & rules.
+4. **Attach** – terms are linked to the IP (`client.license.attachLicenseTerms`).
+5. **Licence Mint** – followers call `client.license.mintLicenseTokens`.
+6. **Royalties** – creators claim via `client.royalty.claimAllRevenue`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All calls execute client-side using the signer injected by Tomo.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📂 Project Structure (high-level)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    generate-campaigns/   # AI → IP workflow
+    mint-license/         # Licence minting screen
+    royalty-dashboard/    # Revenue claims
+    raise-dispute/        # Dispute form
+  lib/
+    story-client.ts       # Story SDK helper
+    tomo-config.ts        # Tomo provider config
+    pinata.ts             # IPFS helpers
+  components/             # Shared providers & UI pieces
+public/                   # Static assets
+```
+
+---
+
+## 🪙 Network
+
+
+---Chain: **Story Network – Aeneid testnet** (chain id 1315).
+
+
+## 🤝 Contributing
+
+1. Fork and clone.
+2. `git checkout -b feature/xyz`
+3. Commit, push, open a PR.
