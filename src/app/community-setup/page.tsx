@@ -65,7 +65,7 @@ export default function BrandSetupPage() {
             <span className="text-3xl" role="img" aria-label="brand">🏢</span>
           </div>
           <h1 className="text-2xl font-bold text-[#A8FF60] tracking-wider font-mono drop-shadow-lg" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-            Brand Setup
+          community Setup
           </h1>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-7">
@@ -74,7 +74,7 @@ export default function BrandSetupPage() {
             <input type="text" id="brandName" value={brandName} onChange={e => setBrandName(e.target.value)} required
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Name" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
             <label htmlFor="brandName" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Brand Name
+              community Name
             </label>
           </div>
           {/* Brand Niche */}
@@ -82,7 +82,7 @@ export default function BrandSetupPage() {
             <input type="text" id="brandNiche" value={brandNiche} onChange={e => setBrandNiche(e.target.value)} required
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Niche" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
             <label htmlFor="brandNiche" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Brand Niche
+            community Niche
             </label>
           </div>
           {/* X Username */}
@@ -98,7 +98,7 @@ export default function BrandSetupPage() {
             <input type="email" id="brandEmail" value={brandEmail} onChange={e => setBrandEmail(e.target.value)} required
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Email" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
             <label htmlFor="brandEmail" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
-              Brand Email
+            community Email
             </label>
           </div>
           {/* Brand Wallet Address */}

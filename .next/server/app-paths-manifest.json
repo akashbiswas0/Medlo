@@ -1,7 +1,9 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/selection/page": "app/selection/page.js",
-  "/influencer-setup/page": "app/influencer-setup/page.js",
+  "/available-influencer/page": "app/available-influencer/page.js",
+  "/community-setup/page": "app/community-setup/page.js",
   "/train/page": "app/train/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/available-influencer/page": "app/available-influencer/page.js"
+  "/api/generate/route": "app/api/generate/route.js",
+  "/generate-campaigns/page": "app/generate-campaigns/page.js"
 }

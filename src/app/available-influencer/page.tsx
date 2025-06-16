@@ -9,7 +9,6 @@ interface Influencer {
   x_username: string;
   insta_username: string;
   follower_count: number;
-  influencer_address: string;
 }
 
 interface ModelDetails {
@@ -25,7 +24,6 @@ interface CombinedData {
   x_username: string;
   insta_username: string;
   follower_count: number;
-  influencer_address: string;
 }
 
 export default function AvailableInfluencersPage() {
@@ -63,63 +61,59 @@ export default function AvailableInfluencersPage() {
         const modelData: ModelDetails[] = await modelResponse.json();
         console.log('Raw model data:', modelData);
 
-        // Create multiple maps for different matching strategies
-        const influencerByXUsername = new Map(
-          influencerData.map(influencer => [influencer.x_username?.toLowerCase(), influencer])
-        );
-        console.log('Influencer by X username map:', Object.fromEntries(influencerByXUsername));
-        
-        const influencerByUsername = new Map(
-          influencerData.map(influencer => [influencer.username?.toLowerCase(), influencer])
-        );
-        console.log('Influencer by username map:', Object.fromEntries(influencerByUsername));
-        
-        const influencerById = new Map(
-          influencerData.map(influencer => [influencer.id, influencer])
-        );
-        console.log('Influencer by ID map:', Object.fromEntries(influencerById));
+        // Create maps for different matching strategies
+        const influencerByXUsername = new Map();
+        const influencerByUsername = new Map();
+        const influencerById = new Map();
+
+        // Populate maps with normalized keys
+        influencerData.forEach(influencer => {
+          if (influencer.x_username) {
+            const normalizedXUsername = influencer.x_username.toLowerCase().replace('@', '').trim();
+            influencerByXUsername.set(normalizedXUsername, influencer);
+          }
+          if (influencer.username) {
+            const normalizedUsername = influencer.username.toLowerCase().trim();
+            influencerByUsername.set(normalizedUsername, influencer);
+          }
+          if (influencer.id) {
+            influencerById.set(influencer.id, influencer);
+          }
+        });
+
+        console.log('Influencer maps created:', {
+          byXUsername: Object.fromEntries(influencerByXUsername),
+          byUsername: Object.fromEntries(influencerByUsername),
+          byId: Object.fromEntries(influencerById)
+        });
 
         // Function to find matching influencer
         const findMatchingInfluencer = (trigger: string): Influencer | null => {
-          const lowerTrigger = trigger.toLowerCase();
-          console.log('Finding match for trigger:', lowerTrigger);
+          const normalizedTrigger = trigger.toLowerCase().replace('@', '').trim();
+          console.log('Finding match for normalized trigger:', normalizedTrigger);
           
           // Try matching by x_username
-          let match = influencerByXUsername.get(lowerTrigger);
+          let match = influencerByXUsername.get(normalizedTrigger);
           if (match) {
             console.log('Found match by x_username:', match);
             return match;
           }
           
           // Try matching by username
-          match = influencerByUsername.get(lowerTrigger);
+          match = influencerByUsername.get(normalizedTrigger);
           if (match) {
             console.log('Found match by username:', match);
             return match;
           }
           
-          // Try matching by removing @ symbol if present
-          const cleanTrigger = lowerTrigger.replace('@', '');
-          match = influencerByXUsername.get(cleanTrigger);
-          if (match) {
-            console.log('Found match by clean x_username:', match);
-            return match;
-          }
-          
-          match = influencerByUsername.get(cleanTrigger);
-          if (match) {
-            console.log('Found match by clean username:', match);
-            return match;
-          }
-          
-          // Try matching by ID if trigger looks like an ID
+          // Try matching by ID
           match = influencerById.get(trigger);
           if (match) {
             console.log('Found match by ID:', match);
             return match;
           }
           
-          console.log('No match found for trigger:', lowerTrigger);
+          console.log('No match found for trigger:', normalizedTrigger);
           return null;
         };
 
@@ -139,12 +133,11 @@ export default function AvailableInfluencersPage() {
             model_id: model.model_id,
             x_username: influencer?.x_username || 'N/A',
             insta_username: influencer?.insta_username || 'N/A',
-            follower_count: influencer?.follower_count || 0,
-            influencer_address: influencer?.influencer_address || 'N/A'
+            follower_count: influencer?.follower_count || 0
           };
         });
 
-        console.log('Combined data:', combined);
+        console.log('Final combined data:', combined);
         setCombinedData(combined);
       } catch (err: any) {
         console.error('Error fetching data:', err);
@@ -215,7 +208,6 @@ export default function AvailableInfluencersPage() {
                   <p className="text-gray-300 font-pixel text-sm">X Username: {data.x_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Insta Username: {data.insta_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Followers: {data.follower_count.toLocaleString()}</p>
-                  <p className="text-gray-300 font-pixel text-xs">Wallet: {data.influencer_address}</p>
                 </div>
                 <Link href={`/generate-campaigns`}>
                   <button className="mt-6 self-end py-2 px-6 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-pixel text-base hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer hover:scale-105">

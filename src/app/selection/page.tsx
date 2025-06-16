@@ -19,13 +19,13 @@ export default function SelectionPage() {
         which one is you?
       </h1>
       <div className="flex flex-col sm:flex-row gap-10 w-full max-w-3xl justify-center z-10">
-        {/* Brand Box */}
-        <Link href="/brand-setup">
+        {/* community Box */}
+        <Link href="/community-setup">
           <div
             className="w-full sm:w-[340px] h-32 bg-[#232426] rounded-xl flex items-center justify-center text-2xl sm:text-3xl font-bold text-[#A8FF60] shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-2xl hover:ring-4 hover:ring-[#A8FF60]/30 cursor-pointer animate-fade-in-box font-mono border border-[#393B3C] tracking-widest"
             style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
           >
-            brand
+            Community
           </div>
         </Link>
         {/* Influencer Box */}

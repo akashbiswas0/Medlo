@@ -57,15 +57,6 @@ export default function TestPage() {
   const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
   const [width, setWidth] = useState(768);
   const [height, setHeight] = useState(768);
-  const [showDashboardButton, setShowDashboardButton] = useState(false);
-
-  useEffect(() => {
-    // Check if message was sent
-    const messageSent = localStorage.getItem('messageSent');
-    if (messageSent === 'true') {
-      setShowDashboardButton(true);
-    }
-  }, []);
 
   const { data: wallet } = useWalletClient();
 
@@ -302,16 +293,6 @@ export default function TestPage() {
             <Link href="/" className="text-3xl font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
               Medlo
             </Link>
-            <div className="flex items-center space-x-6 text-sm font-medium">
-              {showDashboardButton && (
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 bg-[#A8FF60] text-black rounded-md hover:bg-[#97E651] transition-colors font-['Press_Start_2P'] text-xs tracking-wider cursor-pointer"
-                >
-                  GO TO DASHBOARD
-                </Link>
-              )}
-            </div>
           </div>
         </div>
       </nav>
@@ -355,7 +336,7 @@ export default function TestPage() {
           {/* Mask File Input (placeholder) */}
           <div className="mb-6">
             <label htmlFor="mask-file" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-              D mask file
+              mask file
             </label>
             <input
               type="text"
