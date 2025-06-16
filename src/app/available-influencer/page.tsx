@@ -15,6 +15,7 @@ interface ModelDetails {
   id: string;
   trigger: string;
   model_id: string;
+  influencer_id: string;
 }
 
 interface CombinedData {
@@ -25,6 +26,11 @@ interface CombinedData {
   insta_username: string;
   follower_count: number;
 }
+
+const handleGenerateClick = (modelId: string) => {
+  localStorage.setItem('selected_model_id', modelId);
+  console.log(`Model ID ${modelId} saved to local storage.`);
+};
 
 export default function AvailableInfluencersPage() {
   const [combinedData, setCombinedData] = useState<CombinedData[]>([]);
@@ -46,99 +52,46 @@ export default function AvailableInfluencersPage() {
     const fetchData = async () => {
       try {
         console.log('Starting to fetch data...');
-        
-        const influencerResponse = await fetch('/api/influencer');
-        if (!influencerResponse.ok) {
-          throw new Error(`Failed to fetch influencer data: ${influencerResponse.statusText}`);
-        }
-        const influencerData: Influencer[] = await influencerResponse.json();
-        console.log('Raw influencer data:', influencerData);
 
-        const modelResponse = await fetch('/api/model');
+        // 1. Fetch all model details
+        const modelResponse = await fetch('/api/models');
         if (!modelResponse.ok) {
           throw new Error(`Failed to fetch model details: ${modelResponse.statusText}`);
         }
         const modelData: ModelDetails[] = await modelResponse.json();
         console.log('Raw model data:', modelData);
 
-        // Create maps for different matching strategies
-        const influencerByXUsername = new Map();
-        const influencerByUsername = new Map();
-        const influencerById = new Map();
+        // 2. Fetch influencer for each model
+        const combinedDataPromises = modelData
+          .filter(model => model.influencer_id) // Only process models with an influencer_id
+          .map(async (model) => {
+            try {
+              const influencerResponse = await fetch(`/api/influencers/${model.influencer_id}`);
+              if (!influencerResponse.ok) {
+                console.warn(`Could not fetch influencer for model ${model.id}: ${influencerResponse.statusText}`);
+                return null; // Skip if influencer not found
+              }
+              const influencer: Influencer = await influencerResponse.json();
+              
+              return {
+                id: model.id,
+                trigger: model.trigger,
+                model_id: model.model_id,
+                x_username: influencer.x_username,
+                insta_username: influencer.insta_username,
+                follower_count: influencer.follower_count,
+              };
+            } catch (e) {
+              console.error(`Error fetching influencer ${model.influencer_id}`, e);
+              return null;
+            }
+          });
 
-        // Populate maps with normalized keys
-        influencerData.forEach(influencer => {
-          if (influencer.x_username) {
-            const normalizedXUsername = influencer.x_username.toLowerCase().replace('@', '').trim();
-            influencerByXUsername.set(normalizedXUsername, influencer);
-          }
-          if (influencer.username) {
-            const normalizedUsername = influencer.username.toLowerCase().trim();
-            influencerByUsername.set(normalizedUsername, influencer);
-          }
-          if (influencer.id) {
-            influencerById.set(influencer.id, influencer);
-          }
-        });
+        const combinedResults = await Promise.all(combinedDataPromises);
+        const successfulResults = combinedResults.filter(Boolean) as CombinedData[];
 
-        console.log('Influencer maps created:', {
-          byXUsername: Object.fromEntries(influencerByXUsername),
-          byUsername: Object.fromEntries(influencerByUsername),
-          byId: Object.fromEntries(influencerById)
-        });
-
-        // Function to find matching influencer
-        const findMatchingInfluencer = (trigger: string): Influencer | null => {
-          const normalizedTrigger = trigger.toLowerCase().replace('@', '').trim();
-          console.log('Finding match for normalized trigger:', normalizedTrigger);
-          
-          // Try matching by x_username
-          let match = influencerByXUsername.get(normalizedTrigger);
-          if (match) {
-            console.log('Found match by x_username:', match);
-            return match;
-          }
-          
-          // Try matching by username
-          match = influencerByUsername.get(normalizedTrigger);
-          if (match) {
-            console.log('Found match by username:', match);
-            return match;
-          }
-          
-          // Try matching by ID
-          match = influencerById.get(trigger);
-          if (match) {
-            console.log('Found match by ID:', match);
-            return match;
-          }
-          
-          console.log('No match found for trigger:', normalizedTrigger);
-          return null;
-        };
-
-        // Combine data with improved matching
-        const combined: CombinedData[] = modelData.map(model => {
-          const influencer = findMatchingInfluencer(model.trigger);
-          
-          console.log(`Matching trigger "${model.trigger}" with influencer:`, influencer);
-          
-          if (!influencer) {
-            console.log('No influencer found for model:', model);
-          }
-          
-          return {
-            id: model.id,
-            trigger: model.trigger,
-            model_id: model.model_id,
-            x_username: influencer?.x_username || 'N/A',
-            insta_username: influencer?.insta_username || 'N/A',
-            follower_count: influencer?.follower_count || 0
-          };
-        });
-
-        console.log('Final combined data:', combined);
-        setCombinedData(combined);
+        console.log('Final combined data:', successfulResults);
+        setCombinedData(successfulResults);
       } catch (err: any) {
         console.error('Error fetching data:', err);
         setError(err.message);
@@ -204,14 +157,16 @@ export default function AvailableInfluencersPage() {
                       {copiedTriggerId === data.id ? 'Copied!' : 'Copy Trigger'}
                     </button>
                   </div>
-                  <p className="text-gray-300 font-pixel text-sm">Model ID: {data.model_id}</p>
                   <p className="text-gray-300 font-pixel text-sm">X Username: {data.x_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Insta Username: {data.insta_username}</p>
                   <p className="text-gray-300 font-pixel text-sm">Followers: {data.follower_count.toLocaleString()}</p>
                 </div>
-                <Link href={`/generate-campaigns`}>
-                  <button className="mt-6 self-end py-2 px-6 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-pixel text-base hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer hover:scale-105">
-                    Generate Campaigns
+                <Link href={`/generate-campaigns`} passHref>
+                  <button 
+                    onClick={() => handleGenerateClick(data.model_id)}
+                    className="mt-6 self-end py-2 px-6 rounded-lg bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold font-pixel text-base hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer hover:scale-105"
+                  >
+                    Generate NFT
                   </button>
                 </Link>
               </div>

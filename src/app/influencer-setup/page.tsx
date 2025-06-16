@@ -16,7 +16,7 @@ export default function InfluencerSetupPage() {
     setError("");
 
     try {
-      const response = await fetch('/api/influencer', {
+      const response = await fetch('/api/influencers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export default function InfluencerSetupPage() {
           x_username: xUsername,
           insta_username: instaUsername,
           follower_count: parseInt(followerCount),
-          influencer_address: influencerAddress
+          wallet_address: influencerAddress
         }),
       });
 
@@ -37,6 +37,13 @@ export default function InfluencerSetupPage() {
 
       const data = await response.json();
       console.log('Success response:', data);
+
+      if (data.data && data.data.length > 0) {
+        const influencerId = data.data[0].id;
+        localStorage.setItem('influencer_id', influencerId);
+        console.log('Influencer ID stored in local storage:', influencerId);
+      }
+      
       router.push("/train");
     } catch (err) {
       console.error('Form submission error:', err);

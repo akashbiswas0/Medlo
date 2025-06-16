@@ -35,11 +35,13 @@ export async function POST(request: NextRequest) {
 
     console.log("Running the model with prompt:", prompt);
     
-    const allowedModels = ["dev", "schnell"];
-    const safeModel = allowedModels.includes(modelName) ? modelName : "dev";
+    // Use the provided model if it looks like a version string, otherwise default.
+    const modelToRun = modelName.includes(':') 
+      ? modelName 
+      : "priyanshur66/priyanshur:b29bf3d696774ab66911a2208595f081d565a2e90649cc1c4a99339a446901df";
 
     const output = await replicate.run(
-      "priyanshur66/priyanshur:b29bf3d696774ab66911a2208595f081d565a2e90649cc1c4a99339a446901df",
+      modelToRun,
       {
         input: {
           prompt,
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
           guidance_scale,
           lora_scale,
           megapixels,
-          model: safeModel,
+          model: modelToRun.includes("schnell") ? "schnell" : "dev", // Pass dev/schnell if appropriate
           num_inference_steps,
           num_outputs,
           output_format,

@@ -1,41 +1,56 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useWalletClient } from "wagmi";
+import { useWalletClient, useAccount } from "wagmi";
 import { getStoryClient } from "@/lib/story-client";
 import { WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk";
 import Link from "next/link";
 
-interface SavedIp {
-  ipId: `0x${string}`;
-  licenseTermsId: string;
-  image?: string;
+interface IpAsset {
+  ip_id: `0x${string}`;
+  license_terms_id: string;
+  image_url?: string;
 }
 
 export default function MintLicensePage() {
   const { data: wallet } = useWalletClient();
-  const [ips, setIps] = useState<SavedIp[]>([]);
+  const { address: accountAddress, isConnected } = useAccount();
+  const [ips, setIps] = useState<IpAsset[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mintingId, setMintingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored: SavedIp[] = JSON.parse(localStorage.getItem("medlo_ips") || "[]");
-      setIps(stored);
-    }
+    const fetchIpAssets = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/ip-assets`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch IP assets");
+        }
+        const data: IpAsset[] = await response.json();
+        setIps(data);
+      } catch (error) {
+        console.error("Error fetching IP assets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIpAssets();
   }, []);
 
-  async function handleMint(ip: SavedIp) {
+  async function handleMint(ip: IpAsset) {
     if (!wallet) {
       alert("Connect wallet first");
       return;
     }
 
     try {
-      setMintingId(ip.ipId);
+      setMintingId(ip.ip_id);
       const client = await getStoryClient(wallet);
       const resp = await client.license.mintLicenseTokens({
-        licensorIpId: ip.ipId,
-        licenseTermsId: ip.licenseTermsId,
+        licensorIpId: ip.ip_id,
+        licenseTermsId: ip.license_terms_id,
         maxMintingFee: 0n,
         maxRevenueShare: 100,
         amount: 1,
@@ -49,6 +64,14 @@ export default function MintLicensePage() {
     } finally {
       setMintingId(null);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#181A1B] text-gray-100 font-pixel">
+        <p>Loading your IP assets...</p>
+      </div>
+    );
   }
 
   if (!ips.length) {
@@ -102,11 +125,11 @@ export default function MintLicensePage() {
         <h1 className="text-3xl font-bold text-center text-[#A8FF60] tracking-wider">MINT LICENSE TOKENS</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {ips.map((ip) => (
-            <div key={ip.ipId} className="bg-[#232426] border-2 border-[#A8FF60] rounded-none p-4 flex flex-col items-center space-y-4">
-              {ip.image ? (
+            <div key={ip.ip_id} className="bg-[#232426] border-2 border-[#A8FF60] rounded-none p-4 flex flex-col items-center space-y-4">
+              {ip.image_url ? (
                 <div className="w-full aspect-square overflow-hidden rounded-none border border-[#3E4044]">
                   <img 
-                    src={ip.image} 
+                    src={ip.image_url} 
                     alt="ip" 
                     className="w-full h-full object-cover"
                   />
@@ -117,14 +140,14 @@ export default function MintLicensePage() {
                 </div>
               )}
               <div className="w-full bg-[#1A1C1D] p-3 rounded-none border border-[#3E4044]">
-                <code className="break-all text-xs text-gray-300 font-mono">{ip.ipId}</code>
+                <code className="break-all text-xs text-gray-300 font-mono">{ip.ip_id}</code>
               </div>
               <button
                 onClick={() => handleMint(ip)}
-                disabled={mintingId === ip.ipId || !wallet}
+                disabled={mintingId === ip.ip_id || !wallet}
                 className="w-full py-3 px-6 rounded-none bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {mintingId === ip.ipId ? "MINTING..." : "MINT FOR 1 WIP"}
+                {mintingId === ip.ip_id ? "MINTING..." : "MINT FOR 1 WIP"}
               </button>
             </div>
           ))}

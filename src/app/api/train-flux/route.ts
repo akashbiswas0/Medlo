@@ -10,10 +10,11 @@ export async function POST(request: NextRequest) {
     const triggerWord = formData.get('triggerWord');
     const stepsValue = formData.get('steps');
     const steps = stepsValue ? parseInt(stepsValue.toString()) : 1000;
+    const modelName = formData.get('influencer_id');
 
-    if (!triggerWord) {
+    if (!triggerWord || !modelName) {
       return NextResponse.json(
-        { error: 'Trigger word is required' },
+        { error: 'Trigger word and influencer_id are required' },
         { status: 400 }
       );
     }
@@ -51,7 +52,6 @@ export async function POST(request: NextRequest) {
     const zipBuffer = await zip.generateAsync({ type: 'uint8array' });
 
     // First, check if model exists or create it
-    const modelName = "akb";
     const ownerName = process.env.REPLICATE_USERNAME;
     
     if (!ownerName) {
@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
     
     try {
       // Try to get existing model
-      model = await replicate.models.get(ownerName, modelName);
+      model = await replicate.models.get(ownerName, modelName as string);
       console.log("Using existing model:", model.name);
     } catch (error) {
       // Model doesn't exist, create it
       console.log("Creating new model...");
       model = await replicate.models.create(
         ownerName,
-        modelName,
+        modelName as string,
         {
           visibility: "private",
           hardware: "gpu-h100",
@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
         }
       }
     );
+
+    console.log("Training:", training);
 
     console.log("Training started:", training.id);
     console.log("Training status:", training.status);

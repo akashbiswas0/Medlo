@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseClient } from '../../../lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { brand_name, brand_niche, brand_x_username, brand_email, brand_address } = body;
+    const { brand_name, brand_niche, brand_x_username, brand_email, wallet_address } = body;
 
-    if (!brand_name || !brand_niche || !brand_x_username || !brand_email) {
+    if (!brand_name || !brand_email) {
       return NextResponse.json(
-        { error: 'Missing required fields', details: 'Please provide brand_name, brand_niche, brand_x_username, and brand_email' },
+        { error: 'Missing required fields', details: 'Please provide brand_name and brand_email' },
         { status: 400 }
       );
     }
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
           brand_niche,
           brand_x_username,
           brand_email,
-          brand_address
+          wallet_address
         }
       ])
       .select();
@@ -51,7 +51,6 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    console.log('Fetching all brands...');
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('brand')
@@ -70,7 +69,6 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log('Successfully fetched brands:', data);
     return NextResponse.json(data);
 
   } catch (error: any) {
@@ -80,7 +78,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs'; 
+} 

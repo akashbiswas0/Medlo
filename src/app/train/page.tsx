@@ -11,12 +11,14 @@ export default function TrainPage() {
   const [error, setError] = useState('');
   const [trainingStatus, setTrainingStatus] = useState('');
   const [trainingId, setTrainingId] = useState('');
+  const [influencerId, setInfluencerId] = useState<string | null>(null);
   const [showPreloader, setShowPreloader] = useState(true);
   const [showPublishingAnimation, setShowPublishingAnimation] = useState(false);
 
   const router = useRouter();
 
   useEffect(() => {
+    setInfluencerId(localStorage.getItem('influencer_id'));
     const timer = setTimeout(() => setShowPreloader(false), 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -33,7 +35,7 @@ export default function TrainPage() {
   useEffect(() => {
     if (showPublishingAnimation) {
       const timer = setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/royalty-dashboard');
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -189,12 +191,18 @@ export default function TrainPage() {
     setError('');
     setTrainingStatus('Preparing training data...');
     try {
+      if (!influencerId) {
+        throw new Error('Influencer ID not found. Please connect wallet again.');
+      }
+
       const formData = new FormData();
       images.forEach((image, index) => {
         formData.append(`image_${index}`, image);
       });
       formData.append('triggerWord', triggerWord);
       formData.append('steps', steps.toString());
+      formData.append('influencer_id', influencerId);
+
       const response = await fetch('/api/train-flux', {
         method: 'POST',
         body: formData,
@@ -205,26 +213,6 @@ export default function TrainPage() {
       const data = await response.json();
       setTrainingId(data.trainingId);
       setTrainingStatus(data.status);
-
-      // Save model details to database
-      try {
-        const modelResponse = await fetch('/api/model', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            trigger: triggerWord,
-            model_id: data.trainingId
-          }),
-        });
-
-        if (!modelResponse.ok) {
-          console.error('Failed to save model details:', await modelResponse.text());
-        }
-      } catch (modelError) {
-        console.error('Error saving model details:', modelError);
-      }
 
       pollTrainingStatus(data.trainingId);
     } catch (err: any) {
@@ -241,6 +229,42 @@ export default function TrainPage() {
       const data = await response.json();
       setTrainingStatus(data.status);
       if (data.status === 'succeeded' || data.status === 'failed' || data.status === 'canceled') {
+        if (data.status === 'succeeded') {
+          console.log('Training finished successfully. Full response:', data);
+          
+          const modelVersion = data.output?.version;
+
+          if (modelVersion) {
+            console.log(`Saving model version to DB: ${modelVersion}`);
+            try {
+              if (!influencerId) {
+                console.error("Could not find influencer_id. Cannot save model details.");
+                return;
+              }
+              const modelResponse = await fetch('/api/models', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  trigger: triggerWord,
+                  model_id: modelVersion,
+                  influencer_id: influencerId
+                }),
+              });
+      
+              if (!modelResponse.ok) {
+                console.error('Failed to save model details:', await modelResponse.text());
+              } else {
+                console.log('Successfully saved model version to DB.');
+              }
+            } catch (modelError) {
+              console.error('Error saving model details:', modelError);
+            }
+          } else {
+            console.error("Could not find model version in the successful training response.", data);
+          }
+        }
         return;
       }
       setTimeout(() => pollTrainingStatus(id), 30000);

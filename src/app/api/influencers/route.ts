@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseClient } from '../../../lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, x_username, insta_username, follower_count, influencer_address } = body;
+    const { username, x_username, insta_username, follower_count, wallet_address } = body;
 
     // Validate required fields
-    if (!username || !x_username || !insta_username || !follower_count) {
+    if (!username || !wallet_address) {
       return NextResponse.json(
-        { error: 'Missing required fields', details: 'Please provide username, x_username, insta_username, and follower_count' },
+        { error: 'Missing required fields', details: 'Please provide username and wallet_address' },
         { status: 400 }
       );
     }
 
-    // Insert data into Supabase
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('influencer')
@@ -23,14 +22,21 @@ export async function POST(request: Request) {
           username,
           x_username,
           insta_username,
-          follower_count,
-          influencer_address
+          follower_count: follower_count || 0,
+          wallet_address
         }
       ])
       .select();
 
     if (error) {
       console.error('Supabase error:', error);
+      // Handle potential unique constraint violation
+      if (error.code === '23505') { // unique_violation
+        return NextResponse.json(
+          { error: 'Database error', details: 'An influencer with this wallet address already exists.' },
+          { status: 409 } // Conflict
+        );
+      }
       return NextResponse.json(
         { error: 'Database error', details: error.message },
         { status: 500 }
@@ -53,15 +59,17 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    console.log('Fetching all influencers...');
     const supabase = getSupabaseClient();
+    const { searchParams } = new URL(request.url);
+    const walletAddress = searchParams.get('walletAddress');
+
+    let query = supabase.from('influencer').select('*');
+
+    if (walletAddress) {
+      query = query.eq('wallet_address', walletAddress);
+    }
     
-    // Log the query we're about to make
-    console.log('Executing query: SELECT * FROM influencer');
-    
-    const { data, error } = await supabase
-      .from('influencer')
-      .select('*');
+    const { data, error } = await query;
 
     if (error) {
       console.error('Supabase error details:', {
@@ -76,26 +84,6 @@ export async function GET(request: Request) {
       );
     }
 
-    // Log the raw data we received
-    console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
-    
-    // Validate the data structure
-    if (Array.isArray(data)) {
-      console.log(`Found ${data.length} influencers`);
-      data.forEach((influencer, index) => {
-        console.log(`Influencer ${index + 1}:`, {
-          id: influencer.id,
-          username: influencer.username,
-          x_username: influencer.x_username,
-          insta_username: influencer.insta_username,
-          follower_count: influencer.follower_count,
-          influencer_address: influencer.influencer_address
-        });
-      });
-    } else {
-      console.error('Expected array of influencers but got:', typeof data);
-    }
-
     return NextResponse.json(data);
 
   } catch (error: any) {
@@ -105,7 +93,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs'; 
+} 

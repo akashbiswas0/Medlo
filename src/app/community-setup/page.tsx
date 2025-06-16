@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAccount } from 'wagmi';
 
 export default function BrandSetupPage() {
   const [brandName, setBrandName] = useState("");
@@ -10,13 +11,25 @@ export default function BrandSetupPage() {
   const [brandAddress, setBrandAddress] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { address: walletAddress, isConnected } = useAccount();
+
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      setBrandAddress(walletAddress);
+    }
+  }, [isConnected, walletAddress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    if (!isConnected || !walletAddress) {
+      setError("Please connect your wallet first.");
+      return;
+    }
+
     try {
-      const response = await fetch('/api/brand', {
+      const response = await fetch('/api/brands', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +39,7 @@ export default function BrandSetupPage() {
           brand_niche: brandNiche,
           brand_x_username: xUsername,
           brand_email: brandEmail,
-          brand_address: brandAddress
+          wallet_address: brandAddress
         }),
       });
 
@@ -107,8 +120,7 @@ export default function BrandSetupPage() {
               type="text" 
               id="brandAddress" 
               value={brandAddress} 
-              onChange={e => setBrandAddress(e.target.value)} 
-              required
+              readOnly
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" 
               placeholder="Wallet Address" 
               style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} 

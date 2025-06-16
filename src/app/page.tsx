@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useConnectModal } from '@tomo-inc/tomo-evm-kit';
-import { useAccount } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -13,6 +13,8 @@ export default function Home() {
   const router = useRouter();
   const { openConnectModal } = useConnectModal();
   const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     // Set initial dimensions
@@ -33,13 +35,41 @@ export default function Home() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Log wallet address when connected
   useEffect(() => {
-    if (isConnected && address) {
-      console.log('Wallet connected! Address:', address);
-      // Automatically navigate to selection page after successful connection
-      router.push("/selection");
-    }
+    const handleUserRedirect = async () => {
+      if (isConnected && address) {
+        try {
+          const response = await fetch(`/api/user-status?walletAddress=${address}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch user status');
+          }
+          const data = await response.json();
+
+          switch (data.userType) {
+            case 'brand':
+              router.push('/available-influencer');
+              break;
+            case 'influencer':
+              if (data.hasModel) {
+                router.push('/royalty-dashboard');
+              } else {
+                router.push('/train');
+              }
+              break;
+            case 'new':
+            default:
+              router.push('/selection');
+              break;
+          }
+        } catch (error) {
+          console.error("Error handling user redirect:", error);
+          // Fallback to selection page on error
+          router.push('/selection');
+        }
+      }
+    };
+
+    handleUserRedirect();
   }, [isConnected, address, router]);
 
   const handleConnectWallet = async () => {
