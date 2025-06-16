@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { uploadFileToIPFS, uploadJSONToIPFS } from '@/lib/pinata';
 import { getStoryClient } from '@/lib/story-client';
@@ -34,7 +34,8 @@ const ASPECT_RATIO_PRESETS: Record<string, { width: number; height: number }> = 
 const PLATFORM_ADDRESS = (process.env.NEXT_PUBLIC_PLATFORM_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 const BASE_MODEL_ADDRESS = (process.env.NEXT_PUBLIC_BASE_MODEL_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 const CREATOR_ADDRESS: `0x${string}` = '0x2c60e247978Ee3074DffD1d9626Ed5BC7DD211C1';
-const SPG_COLLECTION = '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc' as const;
+// Will lazily create a private SPG collection on first use
+const PUBLIC_SPG_COLLECTION = '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc' as const;
 const WIP_TOKEN = '0x1514000000000000000000000000000000000000' as const;
 const ROYALTY_POLICY_LAP = '0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E' as const;
 
@@ -223,9 +224,22 @@ export default function TestPage() {
       // setup story client
       const client = await getStoryClient(wallet);
 
+      // 0. create a fresh SPG NFT collection for this generation
+      console.log('[Medlo] creating dedicated SPG collection...');
+      const collectionResp = await client.nftClient.createNFTCollection({
+        name: `Medlo NFT ${Date.now()}`,
+        symbol: 'MEDLO',
+        isPublicMinting: false,
+        mintOpen: true,
+        mintFeeRecipient: zeroAddress,
+        contractURI: '',
+      } as any);
+
+      console.log('[Medlo] SPG collection created', collectionResp);
+
       // 1. mint + register IP (NFT ownership minted under SPG collection)
       const registerResp = await client.ipAsset.mintAndRegisterIp({
-        spgNftContract: SPG_COLLECTION,
+        spgNftContract: collectionResp.spgNftContract as `0x${string}`,
         ipMetadata: {
           ipMetadataURI: `https://ipfs.io/ipfs/${ipMetaCid}`,
           ipMetadataHash: `0x${ipMetaHash}`,
@@ -276,6 +290,17 @@ export default function TestPage() {
       setIpTx(primaryTxHash);
       setIpId(registerResp.ipId ?? null);
       alert(`IP Asset created! Tx: ${primaryTxHash}`);
+
+      // Persist for later mint screen
+      if (typeof window !== 'undefined') {
+        const stored = JSON.parse(localStorage.getItem('medlo_ips') || '[]');
+        stored.push({
+          ipId: registerResp.ipId,
+          licenseTermsId: licenseTermsId.toString(),
+          image: imageUri,
+        });
+        localStorage.setItem('medlo_ips', JSON.stringify(stored));
+      }
     } catch (err: any) {
       console.error(err);
       alert(err?.message || 'Failed to create IP');
