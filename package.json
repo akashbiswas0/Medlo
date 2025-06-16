@@ -14,6 +14,7 @@
     "@tanstack/react-query": "^5.80.7",
     "@tomo-inc/tomo-evm-kit": "^0.0.47",
     "core-js-pure": "^3.43.0",
+    "framer-motion": "^12.18.1",
     "jszip": "^3.10.1",
     "next": "^14.2.15",
     "pinata": "^2.4.8",

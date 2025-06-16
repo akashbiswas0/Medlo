@@ -77,12 +77,14 @@ export async function POST(request: NextRequest) {
         
         // Convert ReadableStream to buffer
         const reader = firstOutput.getReader();
-        const chunks = [];
+        const chunks: Uint8Array[] = [];
         
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          chunks.push(value);
+          if (value) {
+            chunks.push(value);
+          }
         }
         
         // Combine chunks into a single buffer
