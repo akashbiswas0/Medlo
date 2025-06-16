@@ -87,6 +87,15 @@ export default function Home() {
         [data-rk] {
           z-index: 9999 !important;
         }
+
+        /* How It Works step glow animation */
+        @keyframes glow-step {
+          0%, 100% { box-shadow: 0 0 8px #A8FF60, 0 0 16px #A8FF60; }
+          50% { box-shadow: 0 0 24px #C0FF8C, 0 0 32px #A8FF60; }
+        }
+        .animate-glow-step {
+          animation: glow-step 2s infinite alternate;
+        }
       `}</style>
 
       {/* Floating elements animation */}
@@ -199,34 +208,34 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                title: "ONE-LINE DEPLOYMENT",
-                description: "Run any open-source AI model with a single API call",
-                icon: "🚀"
+                title: "EMPOWERING CREATORS",
+                description: "Empowering creators collaborations with decentralized AI tools",
+                icon: "🤝"
               },
               {
-                title: "MODEL MARKETPLACE",
-                description: "Access thousands of community-built models with no setup",
-                icon: "🛍️"
+                title: "IP SOLUTIONS",
+                description: "Intellectual property solutions for the digital age",
+                icon: "📜"
               },
               {
-                title: "FINE-TUNING VIA COG",
-                description: "Package and deploy custom models effortlessly",
-                icon: "⚙️"
+                title: "FINE TUNE MODEL",
+                description: "Fine tune model with advanced customization options",
+                icon: "🎛️"
               },
               {
-                title: "AUTO-SCALING",
-                description: "Infrastructure scales automatically on demand",
-                icon: "📈"
+                title: "EASY FINETUNING",
+                description: "Easily finetune model on your data",
+                icon: "🧬"
               },
               {
-                title: "VERSIONING",
-                description: "Track and reproduce experiments with built-in version control",
-                icon: "📝"
+                title: "ROYALTY DISTRIBUTION",
+                description: "Earn royalties for your participation",
+                icon: "💸"
               },
               {
-                title: "SDK INTEGRATION",
-                description: "Seamless integration in existing workflows",
-                icon: "💻"
+                title: "STORY PROTOCOL",
+                description: "Implemented via story protocol for secure and transparent transactions",
+                icon: "🔐"
               }
             ].map((feature, index) => (
               <motion.div
@@ -235,17 +244,17 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02, y: -5 }}
-                className="p-6 rounded-none bg-[#1A1C1D] border-2 border-[#A8FF60] hover:bg-[#232426] transition-all duration-300"
+                className="p-6 rounded-none bg-[#1A1C1D] border-2 border-[#A8FF60] hover:bg-[#232426] transition-all duration-300 flex flex-col items-center text-center group"
               >
                 <motion.div 
-                  className="text-4xl mb-4"
+                  className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300"
                   whileHover={{ scale: 1.2 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
                   {feature.icon}
                 </motion.div>
-                <h3 className="text-xl font-bold mb-2 text-[#A8FF60] font-pixel text-sm">{feature.title}</h3>
-                <p className="text-gray-400 font-pixel text-xs">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-2 text-[#A8FF60] font-pixel text-sm tracking-wider">{feature.title}</h3>
+                <p className="text-gray-400 font-pixel text-xs leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -259,42 +268,79 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-center mb-12 text-[#A8FF60] font-pixel tracking-wider"
+            className="text-3xl font-bold text-center mb-16 text-[#A8FF60] font-pixel tracking-wider drop-shadow-[0_0_16px_#A8FF60]"
           >
             HOW IT WORKS
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "CONNECT WALLET",
-                description: "Connect your wallet to access the platform"
-              },
-              {
-                step: "02",
-                title: "SELECT MODEL",
-                description: "Choose from our curated list of AI models"
-              },
-              {
-                step: "03",
-                title: "GENERATE & DEPLOY",
-                description: "Generate content and deploy with one click"
-              }
-            ].map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                className="relative p-6 bg-[#1A1C1D] border-2 border-[#A8FF60]"
+          <div className="flex flex-col gap-20">
+            {/* Influencer Box */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="relative w-full bg-gradient-to-br from-[#232426] via-[#1A1C1D] to-[#232426] border-2 border-[#A8FF60] rounded-2xl px-10 py-12 flex flex-col items-center shadow-2xl mx-auto overflow-hidden group"
+              style={{minHeight:'240px'}}
+            >
+              {/* Pixel border effect */}
+              <span className="absolute inset-0 pointer-events-none rounded-2xl border-2 border-[#A8FF60] opacity-30 blur-[2px] animate-pulse" />
+              {/* Floating icon */}
+              <motion.div 
+                className="absolute -top-8 left-1/2 -translate-x-1/2 z-10"
+                initial={{ scale: 0.8, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.7 }}
               >
-                <div className="absolute -top-4 -left-4 w-8 h-8 bg-[#A8FF60] flex items-center justify-center text-[#181A1B] font-pixel text-xs">
-                  {step.step}
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-[#A8FF60] font-pixel text-sm mt-4">{step.title}</h3>
-                <p className="text-gray-400 font-pixel text-xs">{step.description}</p>
+                <span className="inline-block text-5xl md:text-6xl drop-shadow-[0_0_16px_#A8FF60]"></span>
               </motion.div>
-            ))}
+              <span className="font-pixel text-2xl text-[#A8FF60] mb-8 mt-8 tracking-widest drop-shadow-[0_0_8px_#A8FF60]">INFLUENCER</span>
+              <ol className="font-pixel text-white text-lg md:text-xl space-y-4 w-full max-w-2xl">
+                {[
+                  "Connect wallet using Tomo Wallet",
+                  "Fill up the form",
+                  "Train the model",
+                  "Model gets automatically listed"
+                ].map((step, idx) => (
+                  <li key={idx} className="flex items-center gap-4">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#A8FF60] text-[#181A1B] font-bold text-lg shadow-md border-2 border-[#C0FF8C] mr-2 animate-glow-step">{idx+1}</span>
+                    <span className="font-pixel text-base md:text-lg text-gray-100">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </motion.div>
+            {/* Community Box */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="relative w-full bg-gradient-to-br from-[#232426] via-[#1A1C1D] to-[#232426] border-2 border-[#A8FF60] rounded-2xl px-10 py-12 flex flex-col items-center shadow-2xl mx-auto overflow-hidden group"
+              style={{minHeight:'240px'}}
+            >
+              {/* Pixel border effect */}
+              <span className="absolute inset-0 pointer-events-none rounded-2xl border-2 border-[#A8FF60] opacity-30 blur-[2px] animate-pulse" />
+              {/* Floating icon */}
+              <motion.div 
+                className="absolute -top-8 left-1/2 -translate-x-1/2 z-10"
+                initial={{ scale: 0.8, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.7 }}
+              >
+                <span className="inline-block text-5xl md:text-6xl drop-shadow-[0_0_16px_#A8FF60]"></span>
+              </motion.div>
+              <span className="font-pixel text-2xl text-[#A8FF60] mb-8 mt-8 tracking-widest drop-shadow-[0_0_8px_#A8FF60]">COMMUNITY</span>
+              <ol className="font-pixel text-white text-lg md:text-xl space-y-4 w-full max-w-2xl">
+                {[
+                  "Connect wallet using Tomo Wallet",
+                  "Fill up the form",
+                  "Generate campaigns",
+                  "Mint IP"
+                ].map((step, idx) => (
+                  <li key={idx} className="flex items-center gap-4">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#A8FF60] text-[#181A1B] font-bold text-lg shadow-md border-2 border-[#C0FF8C] mr-2 animate-glow-step">{idx+1}</span>
+                    <span className="font-pixel text-base md:text-lg text-gray-100">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -310,7 +356,7 @@ export default function Home() {
           >
             <h2 className="text-3xl font-bold mb-6 text-[#A8FF60] font-pixel tracking-wider">ABOUT MEDLO</h2>
             <p className="text-gray-400 font-pixel text-sm max-w-3xl mx-auto">
-              MEDLO is revolutionizing the way creators interact with AI technology. Our platform combines the power of decentralized networks with cutting-edge AI models to provide a seamless, secure, and efficient solution for content generation and intellectual property management.
+            Medlo enables users and communities to co-create NFTs with influencers. It sets on-chain royalties and offers perks like access to gated communities event access etc. Once finalized, the NFT can be minted with fans in our integrated marketplace. Every new license minted sends royalties to both creator and influencer.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -340,52 +386,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="relative py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-center mb-12 text-[#A8FF60] font-pixel tracking-wider"
-          >
-            WHAT OUR USERS SAY
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "MEDLO has transformed how I create content. The AI tools are incredibly powerful and easy to use.",
-                author: "Sarah K.",
-                role: "Content Creator"
-              },
-              {
-                quote: "The platform's integration with blockchain technology gives me peace of mind about my IP rights.",
-                author: "Michael R.",
-                role: "Digital Artist"
-              },
-              {
-                quote: "The one-line deployment feature saves me hours of setup time. Highly recommended!",
-                author: "David L.",
-                role: "Developer"
-              }
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-6 bg-[#1A1C1D] border-2 border-[#A8FF60]"
-              >
-                <p className="text-gray-400 font-pixel text-xs mb-4">"{testimonial.quote}"</p>
-                <div className="text-[#A8FF60] font-pixel text-xs">
-                  <p className="font-bold">{testimonial.author}</p>
-                  <p className="text-gray-500">{testimonial.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+     
 
       {/* Footer */}
       <footer className="relative z-10 bg-[#232426] text-white py-12 border-t border-[#A8FF60]/20">

@@ -8,7 +8,7 @@ import { useWalletClient } from 'wagmi';
 import { zeroAddress, parseEther } from 'viem';
 
 const MODEL_OPTIONS = [
-  { id: 'stable-diffusion', name: 'Stable Diffusion', description: 'Best for general image generation' },
+  { id: 'stable-diffusion', name: 'coming soon', description: 'Best for general image generation' },
   { id: 'midjourney', name: 'Midjourney Style', description: 'Artistic and creative outputs' },
   { id: 'dall-e', name: 'DALL-E', description: 'Photorealistic and detailed images' },
   { id: 'custom', name: 'Custom Model', description: 'Use your own fine-tuned model' },
@@ -429,7 +429,7 @@ export default function TestPage() {
               type="text"
               id="image-file"
               className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
-              placeholder="Enter a URL, paste a file, or drag a file over."
+              placeholder="coming soon"
               disabled={true} // Placeholder for now
             />
           </div>
@@ -443,7 +443,7 @@ export default function TestPage() {
               type="text"
               id="mask-file"
               className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
-              placeholder="Enter a URL, paste a file, or drag a file over."
+              placeholder="coming soon"
               disabled={true} // Placeholder for now
             />
           </div>
