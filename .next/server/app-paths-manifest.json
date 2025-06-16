@@ -1,1 +1,12 @@
-{}
+{
+  "/page": "app/page.js",
+  "/brand-setup/page": "app/brand-setup/page.js",
+  "/api/influencer/route": "app/api/influencer/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/influencer-setup/page": "app/influencer-setup/page.js",
+  "/api/model/route": "app/api/model/route.js",
+  "/api/brand/route": "app/api/brand/route.js",
+  "/generate-campaigns/page": "app/generate-campaigns/page.js",
+  "/available-influencer/page": "app/available-influencer/page.js",
+  "/train/page": "app/train/page.js"
+}
