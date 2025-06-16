@@ -8,8 +8,10 @@ import { DisputeTargetTag } from "@story-protocol/core-sdk";
 
 const TAGS = [
   { value: DisputeTargetTag.IMPROPER_REGISTRATION, label: "IMPROPER REGISTRATION" },
-  { value: DisputeTargetTag.INVALID_CLAIM, label: "INVALID CLAIM" },
-  { value: DisputeTargetTag.INVALID_LICENSE, label: "INVALID LICENSE" },
+  { value: DisputeTargetTag.IMPROPER_USAGE, label: "IMPROPER USAGE" },
+  { value: DisputeTargetTag.IMPROPER_PAYMENT, label: "IMPROPER PAYMENT" },
+  { value: DisputeTargetTag.CONTENT_STANDARDS_VIOLATION, label: "CONTENT STANDARDS VIOLATION" },
+  { value: DisputeTargetTag.IN_DISPUTE, label: "IN DISPUTE" },
 ] as const;
 
 export default function RaiseDisputePage() {

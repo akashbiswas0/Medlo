@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const supabase = getSupabaseClient();
 
   try {
-    let ips = [];
+    let ips: any[] = [];
 
     // Check if the user is a brand
     const { data: brand } = await supabase
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         .eq('creator_wallet', walletAddress);
 
       if (brandIpsError) throw brandIpsError;
-      ips = brandIps;
+      ips = brandIps || [];
     } else {
       // Check if the user is an influencer
       const { data: influencer } = await supabase
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
           .eq('influencer_id', influencer.id);
 
         if (influencerIpsError) throw influencerIpsError;
-        ips = influencerIps;
+        ips = influencerIps || [];
       }
     }
 

@@ -1,6 +1,5 @@
-import { custom } from 'viem';
+import { custom, WalletClient } from 'viem';
 import { StoryClient, StoryConfig } from '@story-protocol/core-sdk';
-import { WalletClient } from 'wagmi';
 
 export async function getStoryClient(wallet: WalletClient): Promise<StoryClient> {
   const config: StoryConfig = {
