@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useWalletClient } from "wagmi";
 import { getStoryClient } from "@/lib/story-client";
 import { WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk";
+import Link from "next/link";
 
 interface SavedIp {
   ipId: `0x${string}`;
@@ -52,35 +53,83 @@ export default function MintLicensePage() {
 
   if (!ips.length) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        <p>No IP assets found. Mint one first.</p>
-      </main>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#181A1B] text-gray-100 font-pixel relative overflow-hidden">
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          .font-pixel {
+            font-family: 'Press Start 2P', 'Fira Mono', monospace;
+          }
+          body { background: #181A1B !important; }
+        `}</style>
+        {/* Grid background */}
+        <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true"
+          style={{
+            backgroundImage:
+              `linear-gradient(to right, rgba(168,255,96,0.07) 1px, transparent 1px),` +
+              `linear-gradient(to bottom, rgba(168,255,96,0.07) 1px, transparent 1px)`,
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <p className="text-[#A8FF60] mb-4">No IP assets found. Mint one first.</p>
+        <Link href="/generate-campaigns" className="px-4 py-2 bg-[#A8FF60] text-[#181A1B] rounded-md hover:bg-[#97E651] transition-colors font-pixel text-sm">
+          Generate IP
+        </Link>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center">Mint License Tokens</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {ips.map((ip) => (
-          <div key={ip.ipId} className="bg-gray-800 rounded p-4 flex flex-col items-center space-y-3">
-            {ip.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={ip.image} alt="ip" className="w-full h-48 object-cover rounded" />
-            ) : (
-              <div className="w-full h-48 bg-gray-700 rounded flex items-center justify-center text-gray-500">No Image</div>
-            )}
-            <code className="break-all text-xs">{ip.ipId}</code>
-            <button
-              onClick={() => handleMint(ip)}
-              disabled={mintingId === ip.ipId || !wallet}
-              className="w-full py-2 bg-green-600 rounded disabled:opacity-50"
-            >
-              {mintingId === ip.ipId ? "Minting..." : "Mint for 1 WIP"}
-            </button>
-          </div>
-        ))}
-      </div>
-    </main>
+    <div className="min-h-screen bg-[#181A1B] text-gray-100 font-pixel relative overflow-hidden">
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        .font-pixel {
+          font-family: 'Press Start 2P', 'Fira Mono', monospace;
+        }
+        body { background: #181A1B !important; }
+      `}</style>
+      
+      {/* Grid background */}
+      <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true"
+        style={{
+          backgroundImage:
+            `linear-gradient(to right, rgba(168,255,96,0.07) 1px, transparent 1px),` +
+            `linear-gradient(to bottom, rgba(168,255,96,0.07) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px',
+        }}
+      />
+
+      <main className="relative z-10 p-6 space-y-6">
+        <h1 className="text-3xl font-bold text-center text-[#A8FF60] tracking-wider">MINT LICENSE TOKENS</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          {ips.map((ip) => (
+            <div key={ip.ipId} className="bg-[#232426] border-2 border-[#A8FF60] rounded-none p-4 flex flex-col items-center space-y-4">
+              {ip.image ? (
+                <div className="w-full aspect-square overflow-hidden rounded-none border border-[#3E4044]">
+                  <img 
+                    src={ip.image} 
+                    alt="ip" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-square bg-[#1A1C1D] rounded-none border border-[#3E4044] flex items-center justify-center text-gray-500">
+                  No Image
+                </div>
+              )}
+              <div className="w-full bg-[#1A1C1D] p-3 rounded-none border border-[#3E4044]">
+                <code className="break-all text-xs text-gray-300 font-mono">{ip.ipId}</code>
+              </div>
+              <button
+                onClick={() => handleMint(ip)}
+                disabled={mintingId === ip.ipId || !wallet}
+                className="w-full py-3 px-6 rounded-none bg-gradient-to-r from-[#A8FF60] to-[#C0FF8C] text-[#181A1B] font-bold hover:from-[#C0FF8C] hover:to-[#A8FF60] transition-all duration-200 shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {mintingId === ip.ipId ? "MINTING..." : "MINT FOR 1 WIP"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
   );
 } 

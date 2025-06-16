@@ -391,16 +391,16 @@ export default function TestPage() {
       <nav className="fixed top-0 w-full bg-[#292A2D] border-b border-[#3E4044] z-50">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-3xl font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
-              Medlo
+            <Link href="/" className="text-3xl font-extrabold text-gray-100 hover:text-[#A8FF60] transition-colors font-roboto tracking-wider">
+              MEDLO
             </Link>
           </div>
         </div>
       </nav>
 
       <main className="flex min-h-screen pt-16">
-        {/* Left Side - Input Panel */}
-        <div className="w-full lg:w-2/5 border-r border-[#3E4044] p-6 overflow-y-auto custom-scrollbar">
+        {/* Left Side - Fixed Input Panel */}
+        <div className="w-full lg:w-2/5 border-r border-[#3E4044] p-6 overflow-y-auto custom-scrollbar fixed h-[calc(100vh-4rem)]">
           <div className="mb-6">
             
           </div>
@@ -634,8 +634,8 @@ export default function TestPage() {
           </div>
         </div>
 
-        {/* Right Side - Output Panel */}
-        <div className="flex-grow p-6 flex flex-col items-center justify-center bg-[#1A1A1A]">
+        {/* Right Side - Scrollable Output Panel */}
+        <div className="flex-grow lg:ml-[40%] p-6 flex flex-col items-center bg-[#1A1A1A] min-h-[calc(100vh-4rem)]">
           {loading ? (
             <div className="flex flex-col items-center justify-center text-gray-400">
               <div className="relative mb-6">
@@ -649,39 +649,42 @@ export default function TestPage() {
             </div>
           ) : imageUrl ? (
             <div className="flex flex-col items-center w-full max-w-4xl">
-              <div className="relative w-full h-auto mb-6 -mt-60 flex justify-center items-center overflow-hidden max-h-[80vh]">
-                <img
-                  src={imageUrl}
-                  alt="Generated image"
-                  className="max-w-full max-h-[70vh] object-contain rounded-lg border border-[#3E4044] shadow-lg"
-                  onLoad={() => console.log('Image loaded.')}
-                  onError={(e) => {
-                    console.error('Image failed to load:', e);
-                    setError('Failed to load image. URL might be invalid.');
-                  }}
-                />
+              {/* Image Container */}
+              <div className="w-full flex justify-center items-center bg-[#1A1A1A] py-6">
+                <div className="relative w-full max-w-2xl">
+                  <img
+                    src={imageUrl}
+                    alt="Generated image"
+                    className="w-full h-auto rounded-lg border border-[#3E4044] shadow-lg"
+                    onLoad={() => console.log('Image loaded.')}
+                    onError={(e) => {
+                      console.error('Image failed to load:', e);
+                      setError('Failed to load image. URL might be invalid.');
+                    }}
+                  />
+                  <div className="flex flex-wrap justify-center gap-2 mt-4">
+                    <Link
+                      href="/generate-campaigns/selected-image"
+                      className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] flex items-center justify-center"
+                    >
+                      Select it
+                    </Link>
+                    <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
+                    <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
+                    <button 
+                      onClick={createIp} 
+                      disabled={ipCreating || !wallet}
+                      className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] disabled:opacity-50"
+                    >
+                      {ipCreating ? 'Creating IP...' : 'Create IP'}
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
-                <Link
-                  href="/generate-campaigns/selected-image"
-                  className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] flex items-center justify-center"
-                >
-                  Select it
-                </Link>
-                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
-                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
-                <button onClick={createIp} disabled={ipCreating || !wallet}
-                  className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] disabled:opacity-50">
-                  {ipCreating ? 'Creating IP...' : 'Create IP'}
-                </button>
-              </div>
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020] cursor-pointer">Delete</button>
-              </div>
-              
+
               {/* Console Logs Display */}
               {consoleLogs.length > 0 && (
-                <div className="w-full mt-8 bg-[#232426] border-2 border-[#A8FF60] rounded-lg p-4">
+                <div className="w-full mt-4 bg-[#232426] border-2 border-[#A8FF60] rounded-lg p-4">
                   <h3 className="text-[#A8FF60] font-pixel text-lg mb-4">IP Creation Logs</h3>
                   <div className="space-y-4">
                     {consoleLogs.map((log, index) => (
@@ -702,7 +705,7 @@ export default function TestPage() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-gray-500 -mt-36">
+            <div className="flex flex-col items-center justify-center text-gray-500">
               <svg className="w-24 h-24 mb-4 text-[#3E4044]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
