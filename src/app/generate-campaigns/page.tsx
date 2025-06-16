@@ -6,10 +6,9 @@ import { uploadFileToIPFS, uploadJSONToIPFS } from '@/lib/pinata';
 import { getStoryClient } from '@/lib/story-client';
 import { useWalletClient } from 'wagmi';
 import { zeroAddress, parseEther } from 'viem';
-import { useRouter } from "next/navigation";
 
 const MODEL_OPTIONS = [
-  { id: 'stable-diffusion', name: 'Stable Diffusion', description: 'Best for general image generation' },
+  { id: 'stable-diffusion', name: 'coming soon', description: 'Best for general image generation' },
   { id: 'midjourney', name: 'Midjourney Style', description: 'Artistic and creative outputs' },
   { id: 'dall-e', name: 'DALL-E', description: 'Photorealistic and detailed images' },
   { id: 'custom', name: 'Custom Model', description: 'Use your own fine-tuned model' },
@@ -65,12 +64,6 @@ const serializeBigInt = (data: any): any => {
   return data;
 };
 
-interface SavedIp {
-  ipId: `0x${string}`;
-  licenseTermsId: string;
-  image?: string;
-}
-
 export default function TestPage() {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -83,21 +76,9 @@ export default function TestPage() {
   const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
   const [width, setWidth] = useState(768);
   const [height, setHeight] = useState(768);
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-  const [influencerId, setInfluencerId] = useState<string | null>(null);
   const [consoleLogs, setConsoleLogs] = useState<Array<{ type: string; data: any; timestamp: string }>>([]);
 
   const { data: wallet } = useWalletClient();
-  const router = useRouter();
-
-  useEffect(() => {
-    const modelId = localStorage.getItem('selected_model_id');
-    if (modelId) {
-      setSelectedModelId(modelId);
-      setSelectedModel('custom'); // Automatically select the custom model option
-      console.log('Using selected model_id from local storage:', modelId);
-    }
-  }, []);
 
   const [ipCreating, setIpCreating] = useState(false);
   const [ipTx, setIpTx] = useState<string | null>(null);
@@ -157,7 +138,7 @@ export default function TestPage() {
         },
         body: JSON.stringify({
           prompt: prompt,
-          model: selectedModel === 'custom' ? selectedModelId : selectedModel,
+          model: selectedModel,
           aspectRatio: selectedAspectRatio,
           height: selectedAspectRatio === 'custom'
             ? height
@@ -380,68 +361,27 @@ export default function TestPage() {
       setIpId(registerResp.ipId ?? null);
       alert(`IP Asset created! Tx: ${primaryTxHash}`);
 
-      // Save to local storage for minting
-      const newIp: SavedIp = {
-        ipId: registerResp.ipId as `0x${string}`,
-        licenseTermsId: licenseTermsId.toString(),
-        image: imageUri,
-      };
-
-      const existingIps: SavedIp[] = JSON.parse(localStorage.getItem("medlo_ips") || "[]");
-      existingIps.push(newIp);
-      localStorage.setItem("medlo_ips", JSON.stringify(existingIps));
-      console.log("Saved IP asset to local storage:", newIp);
-
-      // --- Save to DB ---
-      // 1. Fetch influencer_id from model_details table
-      if (!selectedModelId) {
-        throw new Error("No model selected. Cannot save to DB.");
+      // Persist for later mint screen
+      if (typeof window !== 'undefined') {
+        const stored = JSON.parse(localStorage.getItem('medlo_ips') || '[]');
+        stored.push({
+          ipId: registerResp.ipId,
+          licenseTermsId: licenseTermsId.toString(),
+          image: imageUri,
+        });
+        localStorage.setItem('medlo_ips', JSON.stringify(stored));
       }
-
-      const encodedModelId = encodeURIComponent(selectedModelId);
-      const modelDetailsResponse = await fetch(`/api/models/${encodedModelId}`);
-      if (!modelDetailsResponse.ok) {
-        throw new Error(`Failed to fetch model details for ${selectedModelId}`);
-      }
-      const modelDetails = await modelDetailsResponse.json();
-      const influencerId = modelDetails.influencer_id;
-
-      if (!influencerId) {
-        throw new Error(`Could not find influencer_id for model ${selectedModelId}`);
-      }
-
-      // 2. Save the IP Asset with all details
-      const payload = {
-        ip_id: registerResp.ipId,
-        license_terms_id: licenseTermsId.toString(),
-        image_url: imageUri,
-        prompt: prompt,
-        model_id: selectedModelId,
-        influencer_id: influencerId,
-        creator_wallet: wallet.account.address,
-      };
-
-      console.log("Saving IP Asset to DB with payload:", payload);
-
-      const dbResponse = await fetch('/api/ip-assets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!dbResponse.ok) {
-        const err = await dbResponse.json();
-        throw new Error(err.details || 'Failed to save IP Asset to DB');
-      }
-      console.log("Successfully saved IP Asset to database.");
-
-      // Redirect to minting page
-      router.push('/mint-license');
-
     } catch (err: any) {
+      console.error(err);
+      // Add log for error
+      setConsoleLogs(prev => [...prev, {
+        type: 'Error',
+        data: { message: err?.message || 'Failed to create IP' },
+        timestamp: new Date().toISOString()
+      }]);
+      alert(err?.message || 'Failed to create IP');
+    } finally {
       setIpCreating(false);
-      console.error("Full error in createIp:", err);
-      setError(err.message);
     }
   };
 
@@ -489,7 +429,7 @@ export default function TestPage() {
               type="text"
               id="image-file"
               className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
-              placeholder="Enter a URL, paste a file, or drag a file over."
+              placeholder="coming soon"
               disabled={true} // Placeholder for now
             />
           </div>
@@ -503,7 +443,7 @@ export default function TestPage() {
               type="text"
               id="mask-file"
               className="w-full px-3 py-2 bg-[#2E3034] border border-[#3E4044] rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#A8FF60] focus:border-transparent"
-              placeholder="Enter a URL, paste a file, or drag a file over."
+              placeholder="coming soon"
               disabled={true} // Placeholder for now
             />
           </div>
