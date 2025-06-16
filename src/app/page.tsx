@@ -79,6 +79,14 @@ export default function Home() {
         ::-webkit-scrollbar-thumb:hover {
           background: #97E651;
         }
+
+        /* Aggressively ensure modals are on top */
+        .tomo-modal-overlay,
+        .tomo-modal-container,
+        .wagmi-connect-modal,
+        [data-rk] {
+          z-index: 9999 !important;
+        }
       `}</style>
 
       {/* Floating elements animation */}
@@ -137,7 +145,7 @@ export default function Home() {
               <Link href="#about" className="text-gray-300 hover:text-[#A8FF60] transition-colors font-pixel text-xs">ABOUT</Link>
               <Link href="#contact" className="text-gray-300 hover:text-[#A8FF60] transition-colors font-pixel text-xs">CONTACT</Link>
               <button
-                className="px-4 py-2 rounded-none bg-[#A8FF60] text-[#181A1B] hover:bg-[#97E651] transition-all duration-300 font-pixel text-xs"
+                className="px-4 py-2 cursor-pointer rounded-none bg-[#A8FF60] text-[#181A1B] hover:bg-[#97E651] transition-all duration-300 font-pixel text-xs"
                 onClick={handleConnectWallet}
                 disabled={isConnected || connecting}
               >
@@ -149,7 +157,7 @@ export default function Home() {
       </motion.nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section id="home" className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -178,7 +186,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 py-20 bg-[#232426]">
+      <section id="features" className="relative py-20 bg-[#232426]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -245,7 +253,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="relative z-10 py-20">
+      <section id="how-it-works" className="relative py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -292,7 +300,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="relative z-10 py-20 bg-[#232426]">
+      <section id="about" className="relative py-20 bg-[#232426]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -333,7 +341,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="relative z-10 py-20">
+      <section id="testimonials" className="relative py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
