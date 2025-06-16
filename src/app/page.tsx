@@ -1,37 +1,36 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-// Add Ethereum provider type for window.ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
+import { useConnectModal } from '@tomo-inc/tomo-evm-kit';
+import { useAccount } from 'wagmi';
 
 export default function Home() {
-  const [isConnected, setIsConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const router = useRouter();
+  const { openConnectModal } = useConnectModal();
+  const { address, isConnected } = useAccount();
+
+  // Log wallet address when connected
+  useEffect(() => {
+    if (isConnected && address) {
+      console.log('Wallet connected! Address:', address);
+      // Automatically navigate to selection page after successful connection
+      router.push("/selection");
+    }
+  }, [isConnected, address, router]);
 
   const handleConnectWallet = async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      alert("MetaMask is not installed. Please install it to connect your wallet.");
+    if (!openConnectModal) {
+      alert("Tomo SDK is not properly initialized.");
       return;
     }
     setConnecting(true);
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      if (accounts && accounts.length > 0) {
-        setIsConnected(true);
-        router.push("/selection");
-      } else {
-        setIsConnected(false);
-      }
+      openConnectModal();
     } catch (err) {
-      setIsConnected(false);
+      console.error('Error opening connect modal:', err);
     } finally {
       setConnecting(false);
     }
@@ -56,7 +55,7 @@ export default function Home() {
                 onClick={handleConnectWallet}
                 disabled={isConnected || connecting}
               >
-                {isConnected ? "Connected" : connecting ? "Connecting..." : "connect wallet"}
+                {isConnected ? `Connected: ${address?.slice(0, 6)}...${address?.slice(-4)}` : connecting ? "Connecting..." : "Connect Wallet"}
               </button>
             </div>
           </div>
