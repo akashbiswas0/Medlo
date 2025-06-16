@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { uploadFileToIPFS, uploadJSONToIPFS } from '@/lib/pinata';
+import { getStoryClient } from '@/lib/story-client';
+import { useWalletClient } from 'wagmi';
+import { zeroAddress, parseEther } from 'viem';
 
 const MODEL_OPTIONS = [
   { id: 'stable-diffusion', name: 'Stable Diffusion', description: 'Best for general image generation' },
@@ -26,6 +30,21 @@ const ASPECT_RATIO_PRESETS: Record<string, { width: number; height: number }> = 
   // 'custom' is not included here
 };
 
+// constants for royalty owners
+const PLATFORM_ADDRESS = (process.env.NEXT_PUBLIC_PLATFORM_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+const BASE_MODEL_ADDRESS = (process.env.NEXT_PUBLIC_BASE_MODEL_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+const CREATOR_ADDRESS: `0x${string}` = '0x2c60e247978Ee3074DffD1d9626Ed5BC7DD211C1';
+const SPG_COLLECTION = '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc' as const;
+const WIP_TOKEN = '0x1514000000000000000000000000000000000000' as const;
+const ROYALTY_POLICY_LAP = '0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E' as const;
+
+// helper to sha256 and hex encode
+async function sha256Hex(data: ArrayBuffer | string) {
+  const buf = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function TestPage() {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -38,6 +57,12 @@ export default function TestPage() {
   const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
   const [width, setWidth] = useState(768);
   const [height, setHeight] = useState(768);
+
+  const { data: wallet } = useWalletClient();
+
+  const [ipCreating, setIpCreating] = useState(false);
+  const [ipTx, setIpTx] = useState<string | null>(null);
+  const [ipId, setIpId] = useState<string | null>(null);
 
   const enhancePrompt = async () => {
     if (!prompt.trim()) {
@@ -128,6 +153,135 @@ export default function TestPage() {
     setSelectedAspectRatio(ASPECT_RATIO_OPTIONS[0].id);
     setHeight(768);
     setWidth(768);
+  };
+
+  const createIp = async () => {
+    if (!imageUrl || !wallet) {
+      alert('Image not generated or wallet not connected');
+      return;
+    }
+
+    try {
+      setIpCreating(true);
+      // fetch image as blob
+      const imgRes = await fetch(imageUrl);
+      const blob = await imgRes.blob();
+      const file = new File([blob], 'generated.png', { type: blob.type || 'image/png' });
+      // upload image to IPFS via Pinata
+      const imageCid = await uploadFileToIPFS(file);
+      const imageUri = `https://ipfs.io/ipfs/${imageCid}`;
+
+      // compute hash
+      const imageHashHex = await sha256Hex(await blob.arrayBuffer());
+
+      // build ipMetadata and nftMetadata
+      const ipMetadata = {
+        title: prompt.slice(0, 80) || 'Generated Image',
+        description: prompt,
+        image: imageUri,
+        imageHash: `0x${imageHashHex}`,
+        mediaUrl: imageUri,
+        mediaHash: `0x${imageHashHex}`,
+        mediaType: blob.type || 'image/png',
+        creators: [
+          {
+            name: 'Medlo Creator',
+            address: CREATOR_ADDRESS,
+            description: 'Primary creator',
+            contributionPercent: 99,
+          },
+          {
+            name: 'Medlo Platform',
+            address: (PLATFORM_ADDRESS || zeroAddress) as `0x${string}`,
+            description: 'Platform fee',
+            contributionPercent: 1,
+          },
+          {
+            name: 'Base Model',
+            address: (BASE_MODEL_ADDRESS || zeroAddress) as `0x${string}`,
+            description: 'Base model',
+            contributionPercent: 0,
+          },
+        ],
+      } as const;
+
+      const nftMetadata = {
+        name: 'Medlo Ownership NFT',
+        description: prompt,
+        image: imageUri,
+      } as const;
+
+      // upload metadata JSON
+      const [ipMetaCid, nftMetaCid] = await Promise.all([
+        uploadJSONToIPFS(ipMetadata),
+        uploadJSONToIPFS(nftMetadata),
+      ]);
+
+      const ipMetaHash = await sha256Hex(JSON.stringify(ipMetadata));
+      const nftMetaHash = await sha256Hex(JSON.stringify(nftMetadata));
+
+      // setup story client
+      const client = await getStoryClient(wallet);
+
+      // 1. mint + register IP (NFT ownership minted under SPG collection)
+      const registerResp = await client.ipAsset.mintAndRegisterIp({
+        spgNftContract: SPG_COLLECTION,
+        ipMetadata: {
+          ipMetadataURI: `https://ipfs.io/ipfs/${ipMetaCid}`,
+          ipMetadataHash: `0x${ipMetaHash}`,
+          nftMetadataURI: `https://ipfs.io/ipfs/${nftMetaCid}`,
+          nftMetadataHash: `0x${nftMetaHash}`,
+        },
+      });
+
+      console.log('[Medlo] mintAndRegisterIp response', registerResp);
+
+      // 2. create or get license terms (1 $WIP default fee)
+      const termsResp = await client.license.registerPILTerms({
+        defaultMintingFee: parseEther('1'),
+        currency: WIP_TOKEN,
+        royaltyPolicy: ROYALTY_POLICY_LAP,
+        transferable: false,
+        expiration: 0n,
+        commercialUse: true,
+        commercialAttribution: true,
+        commercializerChecker: zeroAddress,
+        commercializerCheckerData: '0x',
+        commercialRevShare: 0,
+        commercialRevCeiling: 0n,
+        derivativesAllowed: true,
+        derivativesAttribution: true,
+        derivativesApproval: false,
+        derivativesReciprocal: false,
+        derivativeRevCeiling: 0n,
+        uri: '',
+      } as any);
+
+      console.log('[Medlo] registerPILTerms response', termsResp);
+
+      const licenseTermsId = (termsResp.licenseTermsId ?? '0') as any;
+
+      if (!registerResp.ipId) {
+        throw new Error('IP registration did not return ipId');
+      }
+
+      const attachResp = await client.license.attachLicenseTerms({
+        licenseTermsId,
+        ipId: registerResp.ipId as `0x${string}`,
+      });
+
+      console.log('[Medlo] attachLicenseTerms response', attachResp);
+
+      const primaryTxHash = attachResp.txHash ?? registerResp.txHash ?? null;
+      setIpTx(primaryTxHash);
+      setIpId(registerResp.ipId ?? null);
+      alert(`IP Asset created! Tx: ${primaryTxHash}`);
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message || 'Failed to create IP');
+    } finally {
+      setIpCreating(false);
+    }
   };
 
   return (
@@ -418,13 +572,14 @@ export default function TestPage() {
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Tweak it</button>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
-                {/* <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Report</button> */}
+                <button onClick={createIp} disabled={ipCreating || !wallet}
+                  className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] disabled:opacity-50">
+                  {ipCreating ? 'Creating IP...' : 'Create IP'}
+                </button>
               </div>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {/* <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Add to examples</button> */}
                 <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020] cursor-pointer">Delete</button>
               </div>
-             
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-gray-500">
