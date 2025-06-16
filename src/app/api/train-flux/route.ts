@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract images from formData
-    const images = [];
+    const images: File[] = [];
     for (let [key, value] of formData.entries()) {
       if (key.startsWith('image_') && value instanceof File) {
         images.push(value);
