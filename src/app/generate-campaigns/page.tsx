@@ -294,12 +294,7 @@ export default function TestPage() {
               Medlo
             </Link>
             <div className="flex items-center space-x-6 text-sm font-medium">
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Dashboard</a>
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Explore</a>
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Pricing</a>
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Docs</a>
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Blog</a>
-              <a href="#" className="text-gray-400 hover:text-[#A8FF60]">Changelog</a>
+             
             </div>
           </div>
         </div>
@@ -569,7 +564,12 @@ export default function TestPage() {
                 />
               </div>
               <div className="flex flex-wrap justify-center gap-2 mb-4">
-                <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Tweak it</button>
+                <Link
+                  href="/generate-campaigns/selected-image"
+                  className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044] flex items-center justify-center"
+                >
+                  Select it
+                </Link>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Share</button>
                 <button className="px-3 py-1.5 bg-[#2E3034] text-gray-100 rounded-md hover:bg-[#3E4044] transition-colors text-xs font-medium border border-[#3E4044]">Download</button>
                 <button onClick={createIp} disabled={ipCreating || !wallet}
@@ -582,7 +582,7 @@ export default function TestPage() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-gray-500">
+            <div className="flex flex-col items-center justify-center text-gray-500 -mt-60">
               <svg className="w-24 h-24 mb-4 text-[#3E4044]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
