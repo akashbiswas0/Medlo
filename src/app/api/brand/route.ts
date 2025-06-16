@@ -4,7 +4,7 @@ import { getSupabaseClient } from '../../../lib/supabase';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { brand_name, brand_niche, brand_x_username, brand_email } = body;
+    const { brand_name, brand_niche, brand_x_username, brand_email, brand_address } = body;
 
     if (!brand_name || !brand_niche || !brand_x_username || !brand_email) {
       return NextResponse.json(
@@ -21,7 +21,8 @@ export async function POST(request: Request) {
           brand_name,
           brand_niche,
           brand_x_username,
-          brand_email
+          brand_email,
+          brand_address
         }
       ])
       .select();

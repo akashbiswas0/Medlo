@@ -7,6 +7,7 @@ export default function BrandSetupPage() {
   const [brandNiche, setBrandNiche] = useState("");
   const [xUsername, setXUsername] = useState("");
   const [brandEmail, setBrandEmail] = useState("");
+  const [brandAddress, setBrandAddress] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -24,7 +25,8 @@ export default function BrandSetupPage() {
           brand_name: brandName,
           brand_niche: brandNiche,
           brand_x_username: xUsername,
-          brand_email: brandEmail
+          brand_email: brandEmail,
+          brand_address: brandAddress
         }),
       });
 
@@ -35,6 +37,7 @@ export default function BrandSetupPage() {
 
       const data = await response.json();
       console.log('Success response:', data);
+      localStorage.setItem('brandEmail', brandEmail);
       router.push("/available-influencer");
     } catch (err) {
       console.error('Form submission error:', err);
@@ -96,6 +99,26 @@ export default function BrandSetupPage() {
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Brand Email" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
             <label htmlFor="brandEmail" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
               Brand Email
+            </label>
+          </div>
+          {/* Brand Wallet Address */}
+          <div className="relative">
+            <input 
+              type="text" 
+              id="brandAddress" 
+              value={brandAddress} 
+              onChange={e => setBrandAddress(e.target.value)} 
+              required
+              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" 
+              placeholder="Wallet Address" 
+              style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} 
+            />
+            <label 
+              htmlFor="brandAddress" 
+              className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" 
+              style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
+            >
+              Wallet Address
             </label>
           </div>
           {error && (
