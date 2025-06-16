@@ -318,9 +318,6 @@ export default function TestPage() {
             <Link href="/" className="text-3xl font-bold text-gray-100 hover:text-[#A8FF60] transition-colors">
               Medlo
             </Link>
-            <div className="flex items-center space-x-6 text-sm font-medium">
-             
-            </div>
           </div>
         </div>
       </nav>
@@ -364,7 +361,7 @@ export default function TestPage() {
           {/* Mask File Input (placeholder) */}
           <div className="mb-6">
             <label htmlFor="mask-file" className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-              D mask file
+              mask file
             </label>
             <input
               type="text"

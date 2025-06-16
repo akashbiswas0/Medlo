@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Create a function to get the Supabase client
 export function getSupabaseClient() {
@@ -14,4 +14,4 @@ export function getSupabaseClient() {
 }
 
 // For backwards compatibility, export a default client (will throw error if credentials missing)
-export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null; 
+export const supabase = createClient(supabaseUrl, supabaseAnonKey); 

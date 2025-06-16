@@ -45,6 +45,10 @@ export async function GET(request: Request) {
   try {
     console.log('Fetching all model details...');
     const supabase = getSupabaseClient();
+    
+    // Log the query we're about to make
+    console.log('Executing query: SELECT * FROM model_details');
+    
     const { data, error } = await supabase
       .from('model_details')
       .select('*');
@@ -62,7 +66,23 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log('Successfully fetched model details:', data);
+    // Log the raw data we received
+    console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
+    
+    // Validate the data structure
+    if (Array.isArray(data)) {
+      console.log(`Found ${data.length} model details`);
+      data.forEach((model, index) => {
+        console.log(`Model ${index + 1}:`, {
+          id: model.id,
+          trigger: model.trigger,
+          model_id: model.model_id
+        });
+      });
+    } else {
+      console.error('Expected array of model details but got:', typeof data);
+    }
+
     return NextResponse.json(data);
 
   } catch (error: any) {

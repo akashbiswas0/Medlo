@@ -7,6 +7,7 @@ export default function InfluencerSetupPage() {
   const [xUsername, setXUsername] = useState("");
   const [instaUsername, setInstaUsername] = useState("");
   const [followerCount, setFollowerCount] = useState("");
+  const [influencerAddress, setInfluencerAddress] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -24,7 +25,8 @@ export default function InfluencerSetupPage() {
           username,
           x_username: xUsername,
           insta_username: instaUsername,
-          follower_count: parseInt(followerCount)
+          follower_count: parseInt(followerCount),
+          influencer_address: influencerAddress
         }),
       });
 
@@ -96,6 +98,26 @@ export default function InfluencerSetupPage() {
               className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" placeholder="Follower Count" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} />
             <label htmlFor="followerCount" className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}>
               Follower Count
+            </label>
+          </div>
+          {/* Influencer Wallet Address */}
+          <div className="relative">
+            <input 
+              type="text" 
+              id="influencerAddress" 
+              value={influencerAddress} 
+              onChange={e => setInfluencerAddress(e.target.value)} 
+              required
+              className="peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#181A1B] border border-[#393B3C] text-white font-mono focus:ring-2 focus:ring-[#A8FF60] outline-none transition-all duration-200 placeholder-transparent" 
+              placeholder="Wallet Address" 
+              style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }} 
+            />
+            <label 
+              htmlFor="influencerAddress" 
+              className="absolute left-4 top-2 text-[#A8FF60] text-xs font-mono pointer-events-none transition-all duration-200 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#C0FF8C] peer-placeholder-shown:top-6 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400" 
+              style={{ fontFamily: '"Press Start 2P", "Fira Mono", monospace' }}
+            >
+              Wallet Address
             </label>
           </div>
           {error && (
