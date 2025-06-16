@@ -1,11 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/available-influencer/page": "app/available-influencer/page.js",
+  "/selection/page": "app/selection/page.js",
   "/influencer-setup/page": "app/influencer-setup/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
   "/train/page": "app/train/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/influencer/route": "app/api/influencer/route.js",
-  "/api/model/route": "app/api/model/route.js",
-  "/selection/page": "app/selection/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/available-influencer/page": "app/available-influencer/page.js"
 }
