@@ -45,6 +45,24 @@ async function sha256Hex(data: ArrayBuffer | string) {
   return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Add custom serializer for BigInt
+const serializeBigInt = (data: any): any => {
+  if (typeof data === 'bigint') {
+    return data.toString();
+  }
+  if (Array.isArray(data)) {
+    return data.map(serializeBigInt);
+  }
+  if (typeof data === 'object' && data !== null) {
+    const result: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      result[key] = serializeBigInt(value);
+    }
+    return result;
+  }
+  return data;
+};
+
 export default function TestPage() {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -57,6 +75,7 @@ export default function TestPage() {
   const [isAspectRatioDropdownOpen, setIsAspectRatioDropdownOpen] = useState(false);
   const [width, setWidth] = useState(768);
   const [height, setHeight] = useState(768);
+  const [consoleLogs, setConsoleLogs] = useState<Array<{ type: string; data: any; timestamp: string }>>([]);
 
   const { data: wallet } = useWalletClient();
 
@@ -167,12 +186,34 @@ export default function TestPage() {
       const imgRes = await fetch(imageUrl);
       const blob = await imgRes.blob();
       const file = new File([blob], 'generated.png', { type: blob.type || 'image/png' });
+      
+      // Add log for image fetch
+      setConsoleLogs(prev => [...prev, {
+        type: 'Image Fetch',
+        data: { type: blob.type, size: blob.size },
+        timestamp: new Date().toISOString()
+      }]);
+
       // upload image to IPFS via Pinata
       const imageCid = await uploadFileToIPFS(file);
       const imageUri = `https://ipfs.io/ipfs/${imageCid}`;
 
+      // Add log for IPFS upload
+      setConsoleLogs(prev => [...prev, {
+        type: 'IPFS Upload',
+        data: { cid: imageCid, uri: imageUri },
+        timestamp: new Date().toISOString()
+      }]);
+
       // compute hash
       const imageHashHex = await sha256Hex(await blob.arrayBuffer());
+
+      // Add log for hash computation
+      setConsoleLogs(prev => [...prev, {
+        type: 'Hash Computation',
+        data: { hash: `0x${imageHashHex}` },
+        timestamp: new Date().toISOString()
+      }]);
 
       // build ipMetadata and nftMetadata
       const ipMetadata = {
@@ -211,11 +252,25 @@ export default function TestPage() {
         image: imageUri,
       } as const;
 
+      // Add log for metadata creation
+      setConsoleLogs(prev => [...prev, {
+        type: 'Metadata Creation',
+        data: { ipMetadata, nftMetadata },
+        timestamp: new Date().toISOString()
+      }]);
+
       // upload metadata JSON
       const [ipMetaCid, nftMetaCid] = await Promise.all([
         uploadJSONToIPFS(ipMetadata),
         uploadJSONToIPFS(nftMetadata),
       ]);
+
+      // Add log for metadata upload
+      setConsoleLogs(prev => [...prev, {
+        type: 'Metadata Upload',
+        data: { ipMetaCid, nftMetaCid },
+        timestamp: new Date().toISOString()
+      }]);
 
       const ipMetaHash = await sha256Hex(JSON.stringify(ipMetadata));
       const nftMetaHash = await sha256Hex(JSON.stringify(nftMetadata));
@@ -234,7 +289,12 @@ export default function TestPage() {
         },
       });
 
-      console.log('[Medlo] mintAndRegisterIp response', registerResp);
+      // Add log for IP registration
+      setConsoleLogs(prev => [...prev, {
+        type: 'IP Registration',
+        data: registerResp,
+        timestamp: new Date().toISOString()
+      }]);
 
       // 2. create or get license terms (1 $WIP default fee)
       const termsResp = await client.license.registerPILTerms({
@@ -257,7 +317,12 @@ export default function TestPage() {
         uri: '',
       } as any);
 
-      console.log('[Medlo] registerPILTerms response', termsResp);
+      // Add log for license terms
+      setConsoleLogs(prev => [...prev, {
+        type: 'License Terms',
+        data: termsResp,
+        timestamp: new Date().toISOString()
+      }]);
 
       const licenseTermsId = (termsResp.licenseTermsId ?? '0') as any;
 
@@ -270,7 +335,12 @@ export default function TestPage() {
         ipId: registerResp.ipId as `0x${string}`,
       });
 
-      console.log('[Medlo] attachLicenseTerms response', attachResp);
+      // Add log for license attachment
+      setConsoleLogs(prev => [...prev, {
+        type: 'License Attachment',
+        data: attachResp,
+        timestamp: new Date().toISOString()
+      }]);
 
       const primaryTxHash = attachResp.txHash ?? registerResp.txHash ?? null;
       setIpTx(primaryTxHash);
@@ -278,6 +348,12 @@ export default function TestPage() {
       alert(`IP Asset created! Tx: ${primaryTxHash}`);
     } catch (err: any) {
       console.error(err);
+      // Add log for error
+      setConsoleLogs(prev => [...prev, {
+        type: 'Error',
+        data: { message: err?.message || 'Failed to create IP' },
+        timestamp: new Date().toISOString()
+      }]);
       alert(err?.message || 'Failed to create IP');
     } finally {
       setIpCreating(false);
@@ -547,7 +623,7 @@ export default function TestPage() {
               <p className="mt-2 text-sm text-gray-500">This may take a few moments</p>
             </div>
           ) : imageUrl ? (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-full max-w-4xl">
               <div className="relative w-full h-auto mb-6 -mt-60 flex justify-center items-center overflow-hidden max-h-[80vh]">
                 <img
                   src={imageUrl}
@@ -577,9 +653,31 @@ export default function TestPage() {
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 <button className="px-3 py-1.5 bg-[#5C1A1A] text-red-300 rounded-md hover:bg-[#722020] transition-colors text-xs font-medium border border-[#722020] cursor-pointer">Delete</button>
               </div>
+              
+              {/* Console Logs Display */}
+              {consoleLogs.length > 0 && (
+                <div className="w-full mt-8 bg-[#232426] border-2 border-[#A8FF60] rounded-lg p-4">
+                  <h3 className="text-[#A8FF60] font-pixel text-lg mb-4">IP Creation Logs</h3>
+                  <div className="space-y-4">
+                    {consoleLogs.map((log, index) => (
+                      <div key={index} className="bg-[#1A1C1D] p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[#A8FF60] font-pixel text-sm">{log.type}</span>
+                          <span className="text-gray-400 font-pixel text-xs">
+                            {new Date(log.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <pre className="text-gray-300 font-mono text-sm overflow-x-auto whitespace-pre-wrap">
+                          {JSON.stringify(serializeBigInt(log.data), null, 2)}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-gray-500 -mt-60">
+            <div className="flex flex-col items-center justify-center text-gray-500 -mt-36">
               <svg className="w-24 h-24 mb-4 text-[#3E4044]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
